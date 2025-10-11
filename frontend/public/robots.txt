@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://cryptoalarm.app/sitemap.xml
+
+# Crawl-delay (optional - prevents aggressive crawling)
+Crawl-delay: 1
+
+# Disallow certain paths (if any)
+# Disallow: /api/
+# Disallow: /private/
+
+# Allow important pages
+Allow: /dashboard
+Allow: /premium
+Allow: /

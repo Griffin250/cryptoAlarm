@@ -4,6 +4,7 @@ import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import Link from 'next/link'
+import Image from 'next/image'
 import { 
   TrendingUp, ArrowRight, Bell, Zap, Shield, Phone, 
   BarChart3, Globe, Star, CheckCircle, Play, Pause,
@@ -111,7 +112,13 @@ const Home = () => {
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity cursor-pointer min-w-0">
               <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-2 rounded-xl flex-shrink-0">
-                <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                <Image 
+                  src="/cryptoAlarmLogo.png" 
+                  alt="CryptoAlarm Logo" 
+                  width={20} 
+                  height={20} 
+                  className="sm:w-6 sm:h-6 object-contain"
+                />
               </div>
               <div className="min-w-0">
                 <h1 className="text-lg sm:text-xl font-bold text-white">CryptoAlarm</h1>

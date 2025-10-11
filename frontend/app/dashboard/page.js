@@ -7,6 +7,7 @@ import { Badge } from "../../components/ui/badge";
 import { Alert, AlertDescription } from "../../components/ui/alert";
 import AlertManager from "../../components/AlertManager";
 import Link from "next/link";
+import Image from "next/image";
 import { 
   TrendingUp, TrendingDown, Phone, Wifi, WifiOff, Star, 
   Settings, Bell, User, Search, Menu, BarChart3, 
@@ -179,7 +180,13 @@ export default function Dashboard() {
                 
                 <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity cursor-pointer">
                   <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-2 rounded-xl">
-                    <Bell className="h-4 w-4 text-white" />
+                    <Image 
+                      src="/cryptoAlarmLogo.png" 
+                      alt="CryptoAlarm Logo" 
+                      width={16} 
+                      height={16} 
+                      className="object-contain"
+                    />
                   </div>
                   <div className="hidden sm:block">
                     <h1 className="text-lg font-bold text-white">CryptoAlarm</h1>

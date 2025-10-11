@@ -5,6 +5,7 @@ import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
 import { Alert, AlertDescription } from "../../components/ui/alert";
 import Link from "next/link";
+import Image from "next/image";
 import { 
   Crown, Check, Star, Zap, Shield, Phone, Mail, Globe,
   Users, BarChart3, Bell, Target, Smartphone, Monitor,
@@ -180,19 +181,25 @@ const PremiumPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A]">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 backdrop-blur-lg bg-[#0B1426]/80 border-b border-gray-800">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-3 sm:px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer">
-              <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-2 rounded-xl">
-                <Bell className="h-6 w-6 text-white" />
+            <Link href="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity cursor-pointer min-w-0">
+              <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-2 rounded-xl flex-shrink-0">
+                <Image 
+                  src="/cryptoAlarmLogo.png" 
+                  alt="CryptoAlarm Logo" 
+                  width={20} 
+                  height={20} 
+                  className="sm:w-6 sm:h-6 object-contain"
+                />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">CryptoAlarm</h1>
-                <p className="text-xs text-gray-400">Premium Plans</p>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-bold text-white">CryptoAlarm</h1>
+                <p className="text-xs text-gray-400 hidden sm:block">Premium Plans</p>
               </div>
             </Link>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
               <Link href="/dashboard">
                 <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
                   Dashboard
@@ -771,7 +778,13 @@ const PremiumPage = () => {
           <div className="mb-6">
             <Link href="/" className="flex items-center justify-center space-x-3">
               <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-2 rounded-xl">
-                <Bell className="h-6 w-6 text-white" />
+                <Image 
+                  src="/cryptoAlarmLogo.png" 
+                  alt="CryptoAlarm Logo" 
+                  width={24} 
+                  height={24} 
+                  className="object-contain"
+                />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-white">CryptoAlarm</h1>
