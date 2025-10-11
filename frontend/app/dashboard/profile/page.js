@@ -5,6 +5,7 @@ import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
 import { Alert, AlertDescription } from "../../../components/ui/alert";
 import Link from "next/link";
+import ResponsiveNavbar from "../../../components/ResponsiveNavbar";
 import { 
   User, Bell, Settings, Crown, Calendar, Phone, Mail, 
   MapPin, Globe, Shield, CreditCard, Award, Activity,
@@ -65,66 +66,37 @@ export default function ProfilePage() {
     { id: 6, name: "Consistency King", description: "90+ day streak of active monitoring", icon: Activity, earned: false, date: null }
   ];
 
+  const profileBreadcrumbs = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Profile" }
+  ];
+
+  const profileActions = [
+    <Button 
+      key="edit-profile"
+      onClick={() => setIsEditing(!isEditing)}
+      size="sm" 
+      className="bg-[#3861FB] hover:bg-[#2851FB] text-white w-full md:w-auto"
+    >
+      <Edit className="h-4 w-4 mr-2" />
+      {isEditing ? "Save Changes" : "Edit Profile"}
+    </Button>
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A]">
-      {/* Navigation Header */}
-      <nav className="sticky top-0 z-50 backdrop-blur-lg bg-[#0B1426]/80 border-b border-gray-800">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            {/* Left Side - Navigation */}
-            <div className="flex items-center space-x-6">
-              <Link href="/dashboard" className="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer">
-                <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-2 rounded-xl">
-                  <Bell className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-white">CryptoAlarm</h1>
-                  <div className="text-xs text-gray-400 flex items-center">
-                    <span>User Profile</span>
-                  </div>
-                </div>
-              </Link>
-
-              {/* Breadcrumb */}
-              <div className="flex items-center space-x-2 text-sm">
-                <Link href="/dashboard" className="text-gray-400 hover:text-white transition-colors">
-                  Dashboard
-                </Link>
-                <span className="text-gray-600">/</span>
-                <span className="text-white font-medium">Profile</span>
-              </div>
-            </div>
-
-            {/* Right Side - Actions */}
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={() => setIsEditing(!isEditing)}
-                size="sm" 
-                className="bg-[#3861FB] hover:bg-[#2851FB] text-white"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                {isEditing ? "Save Changes" : "Edit Profile"}
-              </Button>
-              
-              <div className="flex items-center space-x-2">
-                <Link href="/dashboard/portfolio">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                    <Globe className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="/dashboard/settings">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <ResponsiveNavbar 
+        title="CryptoAlarm"
+        subtitle="User Profile"
+        breadcrumbs={profileBreadcrumbs}
+        actions={profileActions}
+        showBackButton={true}
+        backUrl="/dashboard"
+        isConnected={true}
+      />
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Profile Header */}
         <Card className="bg-gray-800/50 border-gray-700 mb-8">
           <CardContent className="p-8">

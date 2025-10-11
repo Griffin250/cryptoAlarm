@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
 import Link from "next/link";
+import ResponsiveNavbar from "../../../components/ResponsiveNavbar";
 import { 
   TrendingUp, TrendingDown, ArrowLeft, Plus, Minus, 
   DollarSign, Percent, BarChart3, PieChart, Target,
@@ -484,64 +485,39 @@ export default function Portfolio() {
     return sortOrder === "desc" ? bValue - aValue : aValue - bValue;
   });
 
+  const portfolioBreadcrumbs = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Portfolio" }
+  ];
+
+  const portfolioActions = [
+    <Button 
+      key="add-transaction"
+      size="sm" 
+      className="bg-[#3861FB] hover:bg-[#2851FB] text-white w-full md:w-auto"
+      onClick={() => {/* Add transaction logic */}}
+    >
+      <Plus className="h-4 w-4 mr-2" />
+      Add Transaction
+    </Button>
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A]">
-      {/* Navigation Header */}
-      <nav className="sticky top-0 z-50 backdrop-blur-lg bg-[#0B1426]/80 border-b border-gray-800">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            {/* Left Side - Navigation */}
-            <div className="flex items-center space-x-6">
-              <Link href="/dashboard" className="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer">
-                <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-2 rounded-xl">
-                  <Bell className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-white">CryptoAlarm</h1>
-                  <div className="text-xs text-gray-400 flex items-center">
-                    <span>Portfolio Management</span>
-                  </div>
-                </div>
-              </Link>
-
-              {/* Breadcrumb */}
-              <div className="flex items-center space-x-2 text-sm">
-                <Link href="/dashboard" className="text-gray-400 hover:text-white transition-colors">
-                  Dashboard
-                </Link>
-                <span className="text-gray-600">/</span>
-                <span className="text-white font-medium">Portfolio</span>
-              </div>
-            </div>
-
-            {/* Right Side - Actions */}
-            <div className="flex items-center space-x-4">
-              <Button size="sm" className="bg-[#3861FB] hover:bg-[#2851FB] text-white">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Transaction
-              </Button>
-              
-              <div className="flex items-center space-x-2">
-                <Link href="/dashboard/settings">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="/dashboard/profile">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                    <User className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <ResponsiveNavbar 
+        title="CryptoAlarm"
+        subtitle="Portfolio Management"
+        breadcrumbs={portfolioBreadcrumbs}
+        actions={portfolioActions}
+        showBackButton={true}
+        backUrl="/dashboard"
+        isConnected={true}
+      />
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Portfolio Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <Card className="bg-gray-800/50 border-gray-700">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-400">Total Portfolio Value</CardTitle>
@@ -590,42 +566,46 @@ export default function Portfolio() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center space-x-1 mb-6 bg-gray-800/30 p-1 rounded-lg w-fit">
+        <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-4 sm:mb-6 bg-gray-800/30 p-1 rounded-lg w-full sm:w-fit overflow-x-auto">
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`${activeView === "overview" ? "bg-[#3861FB] text-white" : "text-gray-400 hover:text-white"}`}
+            className={`${activeView === "overview" ? "bg-[#3861FB] text-white" : "text-gray-400 hover:text-white"} flex-shrink-0`}
             onClick={() => setActiveView("overview")}
           >
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Overview
+            <BarChart3 className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline ml-2">Overview</span>
+            <span className="sm:hidden ml-1 text-xs">Overview</span>
           </Button>
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`${activeView === "holdings" ? "bg-[#3861FB] text-white" : "text-gray-400 hover:text-white"}`}
+            className={`${activeView === "holdings" ? "bg-[#3861FB] text-white" : "text-gray-400 hover:text-white"} flex-shrink-0`}
             onClick={() => setActiveView("holdings")}
           >
-            <PieChart className="h-4 w-4 mr-2" />
-            Holdings
+            <PieChart className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline ml-2">Holdings</span>
+            <span className="sm:hidden ml-1 text-xs">Holdings</span>
           </Button>
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`${activeView === "transactions" ? "bg-[#3861FB] text-white" : "text-gray-400 hover:text-white"}`}
+            className={`${activeView === "transactions" ? "bg-[#3861FB] text-white" : "text-gray-400 hover:text-white"} flex-shrink-0`}
             onClick={() => setActiveView("transactions")}
           >
-            <Calendar className="h-4 w-4 mr-2" />
-            Transactions
+            <Calendar className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline ml-2">Transactions</span>
+            <span className="sm:hidden ml-1 text-xs">Txns</span>
           </Button>
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`${activeView === "wallets" ? "bg-[#3861FB] text-white" : "text-gray-400 hover:text-white"}`}
+            className={`${activeView === "wallets" ? "bg-[#3861FB] text-white" : "text-gray-400 hover:text-white"} flex-shrink-0`}
             onClick={() => setActiveView("wallets")}
           >
-            <Wallet className="h-4 w-4 mr-2" />
-            Wallets
+            <Wallet className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline ml-2">Wallets</span>
+            <span className="sm:hidden ml-1 text-xs">Wallets</span>
           </Button>
         </div>
 
