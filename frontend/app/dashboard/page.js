@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [priceAnimations, setPriceAnimations] = useState({});
   const [activeTab, setActiveTab] = useState("dashboard"); // "dashboard" or "alerts"
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const previousPricesRef = useRef({});
   const priceHistoryRef = useRef({});
 
@@ -98,6 +99,29 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
+  // Close mobile menu on window resize or outside click
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) { // lg breakpoint
+        setMobileMenuOpen(false);
+      }
+    };
+
+    const handleClickOutside = (event) => {
+      if (mobileMenuOpen && !event.target.closest('header')) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    document.addEventListener('click', handleClickOutside);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [mobileMenuOpen]);
+
   const sendTestAlert = async () => {
     setLoading(true);
     try {
@@ -147,25 +171,30 @@ export default function Dashboard() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Left Side - Logo & Navigation */}
-            <div className="flex items-center space-x-8">
-              <Link href="/" className="flex items-center space-x-3">
-                <ArrowLeft className="h-5 w-5 text-gray-400 hover:text-white transition-colors" />
-              </Link>
-              
-              <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer">
-                <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-2 rounded-xl">
-                  <Bell className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-white">CryptoAlarm</h1>
-                  <div className="text-xs text-gray-400 flex items-center">
-                    <span>Professional Trading Platform</span>
+            <div className="flex items-center space-x-4 flex-1 min-w-0">
+              <div className="flex items-center space-x-2 flex-shrink-0">
+                <Link href="/" className="flex items-center">
+                  <ArrowLeft className="h-5 w-5 text-gray-400 hover:text-white transition-colors" />
+                </Link>
+                
+                <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity cursor-pointer">
+                  <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-2 rounded-xl">
+                    <Bell className="h-4 w-4 text-white" />
                   </div>
-                </div>
-              </Link>
+                  <div className="hidden sm:block">
+                    <h1 className="text-lg font-bold text-white">CryptoAlarm</h1>
+                    <div className="text-xs text-gray-400 flex items-center">
+                      <span>Professional Trading Platform</span>
+                    </div>
+                  </div>
+                  <div className="sm:hidden">
+                    <h1 className="text-base font-bold text-white">CryptoAlarm</h1>
+                  </div>
+                </Link>
+              </div>
 
-              {/* Navigation Links */}
-              <nav className="hidden md:flex items-center space-x-1">
+              {/* Desktop Navigation Links */}
+              <nav className="hidden lg:flex items-center space-x-1 flex-shrink-0">
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -199,8 +228,8 @@ export default function Dashboard() {
               </nav>
             </div>
 
-            {/* Center - Search Bar */}
-            <div className="hidden lg:flex items-center max-w-md w-full mx-6">
+            {/* Center - Search Bar (Desktop only) */}
+            <div className="hidden xl:flex items-center max-w-md w-full mx-6">
               <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
@@ -214,18 +243,18 @@ export default function Dashboard() {
             </div>
 
             {/* Right Side - Actions & Status */}
-            <div className="flex items-center space-x-4">
-              {/* Connection Status */}
-              <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              {/* Connection Status - Hidden on mobile */}
+              <div className="hidden sm:flex items-center space-x-2">
                 {isConnected ? (
                   <>
                     <Wifi className="h-4 w-4 text-green-500" />
-                    <span className="text-xs text-green-500 font-medium">Connected</span>
+                    <span className="text-xs text-green-500 font-medium hidden md:inline">Connected</span>
                   </>
                 ) : (
                   <>
                     <WifiOff className="h-4 w-4 text-red-500" />
-                    <span className="text-xs text-red-500 font-medium">Disconnected</span>
+                    <span className="text-xs text-red-500 font-medium hidden md:inline">Disconnected</span>
                   </>
                 )}
               </div>
@@ -237,12 +266,12 @@ export default function Dashboard() {
                 size="sm"
                 className="bg-gradient-to-r from-[#16C784] to-[#10A96B] hover:from-[#14B575] hover:to-[#0E8B56] text-white"
               >
-                <Phone className="h-4 w-4 mr-2" />
-                {loading ? "Calling..." : "Test Alert"}
+                <Phone className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">{loading ? "Calling..." : "Test Alert"}</span>
               </Button>
 
-              {/* Action Buttons */}
-              <div className="flex items-center space-x-2">
+              {/* Desktop Action Buttons */}
+              <div className="hidden md:flex items-center space-x-2">
                 <Link href="/dashboard/settings">
                   <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                     <Settings className="h-4 w-4" />
@@ -254,9 +283,110 @@ export default function Dashboard() {
                   </Button>
                 </Link>
               </div>
+
+              {/* Mobile Menu Button */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="lg:hidden text-muted-foreground hover:text-foreground"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
             </div>
           </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-gray-800/50 bg-[#0B1426]/95 backdrop-blur-lg">
+            <div className="container mx-auto px-4 py-4">
+              {/* Mobile Search */}
+              <div className="xl:hidden mb-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Search cryptocurrencies..."
+                    className="w-full pl-10 pr-4 py-2 bg-muted/50 border border-border rounded-lg text-sm 
+                             focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary
+                             placeholder:text-muted-foreground transition-all duration-200"
+                  />
+                </div>
+              </div>
+              
+              {/* Mobile Navigation */}
+              <nav className="space-y-2">
+                <Button 
+                  variant="ghost" 
+                  className={`w-full justify-start ${activeTab === "dashboard" ? "text-[#3861FB] bg-[#3861FB]/10" : "text-muted-foreground hover:text-foreground"}`}
+                  onClick={() => {
+                    setActiveTab("dashboard");
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <BarChart3 className="h-4 w-4 mr-3" />
+                  Dashboard
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className={`w-full justify-start ${activeTab === "alerts" ? "text-[#3861FB] bg-[#3861FB]/10" : "text-muted-foreground hover:text-foreground"}`}
+                  onClick={() => {
+                    setActiveTab("alerts");
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <Bell className="h-4 w-4 mr-3" />
+                  Alerts
+                </Button>
+                <Link href="/dashboard/portfolio" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
+                    <Globe className="h-4 w-4 mr-3" />
+                    Portfolio
+                  </Button>
+                </Link>
+                <Link href="/premium" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start text-[#16C784] hover:text-[#14B575] hover:bg-[#16C784]/10">
+                    <Star className="h-4 w-4 mr-3" />
+                    Premium
+                  </Button>
+                </Link>
+                
+                <div className="border-t border-gray-800/50 pt-2 mt-2">
+                  <Link href="/dashboard/settings" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
+                      <Settings className="h-4 w-4 mr-3" />
+                      Settings
+                    </Button>
+                  </Link>
+                  <Link href="/dashboard/profile" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
+                      <User className="h-4 w-4 mr-3" />
+                      Profile
+                    </Button>
+                  </Link>
+                </div>
+                
+                {/* Mobile Connection Status */}
+                <div className="sm:hidden border-t border-gray-800/50 pt-2 mt-2">
+                  <div className="flex items-center space-x-2 px-3 py-2">
+                    {isConnected ? (
+                      <>
+                        <Wifi className="h-4 w-4 text-green-500" />
+                        <span className="text-xs text-green-500 font-medium">Connected</span>
+                      </>
+                    ) : (
+                      <>
+                        <WifiOff className="h-4 w-4 text-red-500" />
+                        <span className="text-xs text-red-500 font-medium">Disconnected</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </nav>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Alert Message */}
@@ -274,11 +404,11 @@ export default function Dashboard() {
       )}
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 flex-grow">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-grow">
         {activeTab === "dashboard" ? (
           <>
             {/* Market Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">Market Cap</CardTitle>
@@ -356,7 +486,7 @@ export default function Dashboard() {
                       return (
                         <div 
                           key={symbol} 
-                          className={`flex items-center justify-between p-4 rounded-lg border transition-all duration-500 ${
+                          className={`flex items-center justify-between p-3 sm:p-4 rounded-lg border transition-all duration-500 ${
                             isAnimating 
                               ? priceAnimations[symbol]?.trend === "up" 
                                 ? "bg-green-500/20 border-green-500/50" 
@@ -365,27 +495,27 @@ export default function Dashboard() {
                           }`}
                         >
                           {/* Left - Crypto Info */}
-                          <div className="flex items-center space-x-4">
-                            <div className="flex items-center space-x-3">
-                              <div className={`text-2xl ${isAnimating ? 'animate-pulse' : ''}`}>
+                          <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
+                            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                              <div className={`text-xl sm:text-2xl flex-shrink-0 ${isAnimating ? 'animate-pulse' : ''}`}>
                                 {info.icon}
                               </div>
-                              <div>
-                                <div className="font-semibold text-foreground">{info.name}</div>
-                                <div className="text-sm text-muted-foreground">{info.symbol}</div>
+                              <div className="min-w-0 flex-1">
+                                <div className="font-semibold text-foreground truncate text-sm sm:text-base">{info.name}</div>
+                                <div className="text-xs sm:text-sm text-muted-foreground">{info.symbol}</div>
                               </div>
                             </div>
                             
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs flex-shrink-0 hidden sm:inline-flex">
                               #{info.rank}
                             </Badge>
                           </div>
 
                           {/* Right - Price & Change */}
-                          <div className="flex items-center space-x-6">
+                          <div className="flex items-center space-x-2 sm:space-x-6 flex-shrink-0">
                             {/* Price */}
                             <div className="text-right">
-                              <div className={`text-xl font-bold transition-all duration-300 ${
+                              <div className={`text-sm sm:text-xl font-bold transition-all duration-300 ${
                                 isAnimating ? 'scale-105' : ''
                               }`}>
                                 ${price.toLocaleString(undefined, { 
@@ -393,25 +523,29 @@ export default function Dashboard() {
                                   maximumFractionDigits: price < 1 ? 8 : 2 
                                 })}
                               </div>
+                              {/* Show rank on mobile */}
+                              <div className="text-xs text-muted-foreground sm:hidden">
+                                #{info.rank}
+                              </div>
                             </div>
 
                             {/* Price Change & Trend */}
-                            <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-1 sm:space-x-3">
                               {priceChange && (
                                 <div className={`flex items-center space-x-1 transition-all duration-300 ${
                                   priceChange.trend === "up" ? "text-green-500" : 
                                   priceChange.trend === "down" ? "text-red-500" : "text-muted-foreground"
                                 }`}>
                                   {priceChange.trend === "up" ? (
-                                    <TrendingUp className={`h-4 w-4 ${
-                                      priceChange.trendStrength === "strong" ? "h-5 w-5" : ""
+                                    <TrendingUp className={`h-3 w-3 sm:h-4 sm:w-4 ${
+                                      priceChange.trendStrength === "strong" ? "sm:h-5 sm:w-5" : ""
                                     }`} />
                                   ) : (
-                                    <TrendingDown className={`h-4 w-4 ${
-                                      priceChange.trendStrength === "strong" ? "h-5 w-5" : ""
+                                    <TrendingDown className={`h-3 w-3 sm:h-4 sm:w-4 ${
+                                      priceChange.trendStrength === "strong" ? "sm:h-5 sm:w-5" : ""
                                     }`} />
                                   )}
-                                  <span className="text-sm font-medium">
+                                  <span className="text-xs sm:text-sm font-medium">
                                     {priceChange.rawChange > 0 ? "+" : ""}{priceChange.rawChange.toFixed(2)}%
                                   </span>
                                 </div>

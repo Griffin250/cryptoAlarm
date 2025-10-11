@@ -107,29 +107,30 @@ const Home = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A]">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 backdrop-blur-lg bg-[#0B1426]/80 border-b border-gray-800">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-3 sm:px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer">
-              <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-2 rounded-xl">
-                <Bell className="h-6 w-6 text-white" />
+            <Link href="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity cursor-pointer min-w-0">
+              <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-2 rounded-xl flex-shrink-0">
+                <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">CryptoAlarm</h1>
-                <p className="text-xs text-gray-400">Never Miss a Move</p>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-bold text-white">CryptoAlarm</h1>
+                <p className="text-xs text-gray-400 hidden sm:block">Never Miss a Move</p>
               </div>
             </Link>
             
-            <div className="flex items-center space-x-4">
-              <Link href="/premium">
+            <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+              <Link href="/premium" className="hidden sm:block">
                 <Button variant="outline" className="border-[#16C784] text-[#16C784] hover:bg-[#16C784] hover:text-white">
                   <Crown className="h-4 w-4 mr-2" />
                   Premium Plans
                 </Button>
               </Link>
               <Link href="/dashboard">
-                <Button className="bg-[#3861FB] hover:bg-[#2851FB] text-white">
-                  Launch Dashboard
-                  <ArrowRight className="h-4 w-4 ml-2" />
+                <Button className="bg-[#3861FB] hover:bg-[#2851FB] text-white text-sm sm:text-base">
+                  <span className="hidden sm:inline">Launch Dashboard</span>
+                  <span className="sm:hidden">Dashboard</span>
+                  <ArrowRight className="h-4 w-4 ml-1 sm:ml-2" />
                 </Button>
               </Link>
             </div>
