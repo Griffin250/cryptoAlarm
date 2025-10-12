@@ -15,7 +15,7 @@ import Image from "next/image";
 import { 
   TrendingUp, TrendingDown, Phone, Wifi, WifiOff, Star, 
   Settings, Bell, User, Search, Menu, BarChart3, 
-  Zap, Globe, Shield, DollarSign, ArrowLeft, Home
+  Zap, Globe, Shield, DollarSign, ArrowLeft, Home, RefreshCw
 } from "lucide-react";
 
 // Crypto info mapping - Extended list
@@ -44,65 +44,108 @@ export default function Dashboard() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const previousPricesRef = useRef({});
   const priceHistoryRef = useRef({});
+  
+  // Auto-refresh controls
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [refreshInterval, setRefreshInterval] = useState(2000); // 2 seconds default
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshCount, setRefreshCount] = useState(0);
+  const intervalRef = useRef(null);
 
-  useEffect(() => {
-    const fetchPrices = async () => {
-      try {
-        const res = await api.get("/prices");
-        const newPrices = res.data.prices || {};
+  // Enhanced fetchPrices function with refresh controls
+  const fetchPrices = async (isManual = false) => {
+    if (isManual) setIsRefreshing(true);
+    
+    try {
+      const res = await api.get("/prices");
+      const newPrices = res.data.prices || {};
+      
+      // Track price changes and animations
+      const animations = {};
+      Object.keys(newPrices).forEach(symbol => {
+        const currentPrice = newPrices[symbol];
+        const previousPrice = previousPricesRef.current[symbol];
         
-        // Track price changes and animations
-        const animations = {};
-        Object.keys(newPrices).forEach(symbol => {
-          const currentPrice = newPrices[symbol];
-          const previousPrice = previousPricesRef.current[symbol];
+        if (previousPrice && previousPrice !== currentPrice) {
+          animations[symbol] = {
+            trend: currentPrice > previousPrice ? "up" : "down",
+            isFlashing: true
+          };
           
-          if (previousPrice && previousPrice !== currentPrice) {
-            animations[symbol] = {
-              trend: currentPrice > previousPrice ? "up" : "down",
-              isFlashing: true
-            };
-            
-            // Store price history for trend analysis
-            if (!priceHistoryRef.current[symbol]) {
-              priceHistoryRef.current[symbol] = [];
-            }
-            priceHistoryRef.current[symbol].push({
-              price: currentPrice,
-              timestamp: Date.now()
-            });
-            
-            // Keep only last 10 price points
-            if (priceHistoryRef.current[symbol].length > 10) {
-              priceHistoryRef.current[symbol] = priceHistoryRef.current[symbol].slice(-10);
-            }
+          // Store price history for trend analysis
+          if (!priceHistoryRef.current[symbol]) {
+            priceHistoryRef.current[symbol] = [];
           }
-        });
-        
-        setPriceAnimations(animations);
-        setPrices(newPrices);
-        previousPricesRef.current = newPrices;
-        setLastUpdate(new Date());
-        setIsConnected(true);
-        
-        // Clear animations after 1 second
-        setTimeout(() => {
-          setPriceAnimations({});
-        }, 1000);
-        
-      } catch (error) {
-        console.error("Failed to fetch prices:", error);
-        setIsConnected(false);
-      }
-    };
+          priceHistoryRef.current[symbol].push({
+            price: currentPrice,
+            timestamp: Date.now()
+          });
+          
+          // Keep only last 10 price points
+          if (priceHistoryRef.current[symbol].length > 10) {
+            priceHistoryRef.current[symbol] = priceHistoryRef.current[symbol].slice(-10);
+          }
+        }
+      });
+      
+      setPriceAnimations(animations);
+      setPrices(newPrices);
+      previousPricesRef.current = newPrices;
+      setLastUpdate(new Date());
+      setIsConnected(true);
+      setRefreshCount(prev => prev + 1);
+      
+      // Clear animations after 1 second
+      setTimeout(() => {
+        setPriceAnimations({});
+      }, 1000);
+      
+    } catch (error) {
+      console.error("Failed to fetch prices:", error);
+      setIsConnected(false);
+    } finally {
+      if (isManual) setIsRefreshing(false);
+    }
+  };
 
+  // Auto-refresh effect with configurable interval
+  useEffect(() => {
     // Initial fetch
     fetchPrices();
     
-    // Set up polling every 2 seconds
-    const interval = setInterval(fetchPrices, 2000);
-    return () => clearInterval(interval);
-  }, []);
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    
+    // Set up new interval if auto-refresh is enabled
+    if (autoRefresh) {
+      intervalRef.current = setInterval(() => {
+        fetchPrices();
+      }, refreshInterval);
+    }
+    
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [autoRefresh, refreshInterval]);
+
+  // Manual refresh function
+  const handleManualRefresh = () => {
+    fetchPrices(true);
+  };
+
+  // Toggle auto-refresh
+  const toggleAutoRefresh = () => {
+    setAutoRefresh(!autoRefresh);
+  };
+
+  // Change refresh interval
+  const handleIntervalChange = (newInterval) => {
+    setRefreshInterval(newInterval);
+  };
 
   // Close mobile menu on window resize or outside click
   useEffect(() => {
@@ -173,123 +216,161 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A] flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-lg bg-[#0B1426]/90 border-b border-gray-800/50">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+        <div className="container mx-auto px-2 sm:px-4">
+          <div className="flex items-center justify-between h-16 gap-2">
             {/* Left Side - Logo & Navigation */}
-            <div className="flex items-center space-x-4 flex-1 min-w-0">
-              <div className="flex items-center space-x-2 flex-shrink-0">
-                <Link href="/" className="flex items-center">
-                  <ArrowLeft className="h-5 w-5 text-gray-400 hover:text-white transition-colors" />
+            <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
+              <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+                <Link href="/" className="flex items-center p-1">
+                  <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 hover:text-white transition-colors" />
                 </Link>
                 
-                <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity cursor-pointer">
-                  <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-2 rounded-xl">
+                <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity cursor-pointer min-w-0">
+                  <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-1.5 sm:p-2 rounded-lg sm:rounded-xl flex-shrink-0">
                     <Image 
                       src="/cryptoAlarmLogo.png" 
                       alt="CryptoAlarm Logo" 
-                      width={16} 
-                      height={16} 
-                      className="object-contain"
+                      width={14} 
+                      height={14} 
+                      className="object-contain sm:w-4 sm:h-4"
                     />
                   </div>
-                  <div className="hidden sm:block">
-                    <h1 className="text-lg font-bold text-white">CryptoAlarm</h1>
-                    <div className="text-xs text-gray-400 flex items-center">
-                      <span>Professional Trading Platform</span>
+                  <div className="hidden sm:block min-w-0">
+                    <h1 className="text-base lg:text-lg font-bold text-white truncate">CryptoAlarm</h1>
+                    <div className="text-xs text-gray-400 flex items-center truncate">
+                      <span className="truncate">Professional Trading Platform</span>
                     </div>
                   </div>
-                  <div className="sm:hidden">
-                    <h1 className="text-base font-bold text-white">CryptoAlarm</h1>
+                  <div className="sm:hidden min-w-0">
+                    <h1 className="text-sm font-bold text-white truncate">CryptoAlarm</h1>
                   </div>
                 </Link>
               </div>
 
               {/* Desktop Navigation Links */}
-              <nav className="hidden lg:flex items-center space-x-1 flex-shrink-0">
+              <nav className="hidden lg:flex items-center space-x-0.5 xl:space-x-1 flex-shrink-0">
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className={`${activeTab === "dashboard" ? "text-[#3861FB] bg-[#3861FB]/10" : "text-muted-foreground hover:text-foreground"}`}
+                  className={`px-2 xl:px-3 ${activeTab === "dashboard" ? "text-[#3861FB] bg-[#3861FB]/10" : "text-muted-foreground hover:text-foreground"}`}
                   onClick={() => setActiveTab("dashboard")}
                 >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Dashboard
+                  <BarChart3 className="h-4 w-4 xl:mr-2" />
+                  <span className="hidden xl:inline">Dashboard</span>
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className={`${activeTab === "alerts" ? "text-[#3861FB] bg-[#3861FB]/10" : "text-muted-foreground hover:text-foreground"}`}
+                  className={`px-2 xl:px-3 ${activeTab === "alerts" ? "text-[#3861FB] bg-[#3861FB]/10" : "text-muted-foreground hover:text-foreground"}`}
                   onClick={() => setActiveTab("alerts")}
                 >
-                  <Bell className="h-4 w-4 mr-2" />
-                  Alerts
+                  <Bell className="h-4 w-4 xl:mr-2" />
+                  <span className="hidden xl:inline">Alerts</span>
                 </Button>
                 <Link href="/dashboard/portfolio">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                    <Globe className="h-4 w-4 mr-2" />
-                    Portfolio
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground px-2 xl:px-3">
+                    <Globe className="h-4 w-4 xl:mr-2" />
+                    <span className="hidden xl:inline">Portfolio</span>
                   </Button>
                 </Link>
                 <Link href="/premium">
-                  <Button variant="ghost" size="sm" className="text-[#16C784] hover:text-[#14B575] hover:bg-[#16C784]/10">
-                    <Star className="h-4 w-4 mr-2" />
-                    Premium
+                  <Button variant="ghost" size="sm" className="text-[#16C784] hover:text-[#14B575] hover:bg-[#16C784]/10 px-2 xl:px-3">
+                    <Star className="h-4 w-4 xl:mr-2" />
+                    <span className="hidden xl:inline">Premium</span>
                   </Button>
                 </Link>
               </nav>
             </div>
 
-            {/* Center - Search Bar (Desktop only) */}
-            <div className="hidden xl:flex items-center max-w-md w-full mx-6">
-              <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Search cryptocurrencies..."
-                  className="w-full pl-10 pr-4 py-2 bg-muted/50 border border-border rounded-lg text-sm 
-                           focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary
-                           placeholder:text-muted-foreground transition-all duration-200"
-                />
-              </div>
-            </div>
+            {/* Center Spacer - Search bar hidden for better layout */}
+            <div className="hidden lg:flex flex-1" />
 
             {/* Right Side - Actions & Status */}
-            <div className="flex items-center space-x-2 flex-shrink-0">
-              {/* Connection Status - Hidden on mobile */}
-              <div className="hidden sm:flex items-center space-x-2">
+            <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+              {/* Connection Status - Hidden on small screens */}
+              <div className="hidden md:flex items-center space-x-2">
                 {isConnected ? (
                   <>
                     <Wifi className="h-4 w-4 text-green-500" />
-                    <span className="text-xs text-green-500 font-medium hidden md:inline">Connected</span>
+                    <span className="text-xs text-green-500 font-medium hidden lg:inline">Connected</span>
                   </>
                 ) : (
                   <>
                     <WifiOff className="h-4 w-4 text-red-500" />
-                    <span className="text-xs text-red-500 font-medium hidden md:inline">Disconnected</span>
+                    <span className="text-xs text-red-500 font-medium hidden lg:inline">Disconnected</span>
                   </>
                 )}
               </div>
 
-              {/* Test Alert Button */}
+              {/* Refresh Controls */}
+              <div className="flex items-center">
+                {/* Manual Refresh Button */}
+                <Button 
+                  onClick={handleManualRefresh}
+                  disabled={isRefreshing}
+                  size="sm"
+                  variant="ghost"
+                  className="relative text-muted-foreground hover:text-foreground hover:bg-muted/50 disabled:opacity-50 px-2"
+                  title={isRefreshing ? "Refreshing..." : "Manual refresh"}
+                >
+                  <RefreshCw className={`h-4 w-4 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </Button>
+
+                {/* Auto-refresh Status & Controls - Large screens only */}
+                <div className="hidden xl:flex items-center space-x-1 ml-1">
+                  <Button 
+                    onClick={toggleAutoRefresh}
+                    size="sm"
+                    variant="ghost"
+                    className={`text-xs px-2 py-1 h-6 transition-colors ${
+                      autoRefresh 
+                        ? 'text-green-500 bg-green-500/10 hover:bg-green-500/20' 
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    }`}
+                    title={`Auto-refresh: ${autoRefresh ? 'ON' : 'OFF'}`}
+                  >
+                    <div className={`w-2 h-2 rounded-full mr-1 ${autoRefresh ? 'bg-green-500' : 'bg-muted-foreground'}`} />
+                    {autoRefresh ? 'AUTO' : 'OFF'}
+                  </Button>
+                  
+                  {/* Refresh Interval Selector */}
+                  {autoRefresh && (
+                    <select
+                      value={refreshInterval}
+                      onChange={(e) => handleIntervalChange(Number(e.target.value))}
+                      className="text-xs bg-muted/50 border border-border rounded px-1 py-0.5 text-muted-foreground hover:text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 w-12"
+                      title="Refresh interval"
+                    >
+                      <option value={1000}>1s</option>
+                      <option value={2000}>2s</option>
+                      <option value={5000}>5s</option>
+                      <option value={10000}>10s</option>
+                      <option value={30000}>30s</option>
+                    </select>
+                  )}
+                </div>
+              </div>
+
+              {/* Test Alert Button - Responsive sizing */}
               <Button 
                 onClick={sendTestAlert}
                 disabled={loading}
                 size="sm"
-                className="bg-gradient-to-r from-[#16C784] to-[#10A96B] hover:from-[#14B575] hover:to-[#0E8B56] text-white"
+                className="bg-gradient-to-r from-[#16C784] to-[#10A96B] hover:from-[#14B575] hover:to-[#0E8B56] text-white px-2 sm:px-3"
               >
                 <Phone className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">{loading ? "Calling..." : "Test Alert"}</span>
+                <span className="hidden sm:inline text-xs sm:text-sm">{loading ? "Calling..." : "Test Alert"}</span>
               </Button>
 
-              {/* Desktop Action Buttons */}
-              <div className="hidden md:flex items-center space-x-2">
+              {/* Desktop Action Buttons - Hidden on smaller screens */}
+              <div className="hidden lg:flex items-center space-x-1">
                 <Link href="/dashboard/settings">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground px-2">
                     <Settings className="h-4 w-4" />
                   </Button>
                 </Link>
                 <Link href="/dashboard/profile">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground px-2">
                     <User className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -299,10 +380,10 @@ export default function Dashboard() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="lg:hidden text-muted-foreground hover:text-foreground"
+                className="lg:hidden text-muted-foreground hover:text-foreground px-2"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
-                <Menu className="h-5 w-5" />
+                <Menu className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -378,19 +459,69 @@ export default function Dashboard() {
                   </Link>
                 </div>
                 
-                {/* Mobile Connection Status */}
-                <div className="sm:hidden border-t border-gray-800/50 pt-2 mt-2">
-                  <div className="flex items-center space-x-2 px-3 py-2">
-                    {isConnected ? (
-                      <>
-                        <Wifi className="h-4 w-4 text-green-500" />
-                        <span className="text-xs text-green-500 font-medium">Connected</span>
-                      </>
-                    ) : (
-                      <>
-                        <WifiOff className="h-4 w-4 text-red-500" />
-                        <span className="text-xs text-red-500 font-medium">Disconnected</span>
-                      </>
+                {/* Mobile Connection Status & Refresh Controls */}
+                <div className="sm:hidden border-t border-gray-800/50 pt-2 mt-2 space-y-2">
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <div className="flex items-center space-x-2">
+                      {isConnected ? (
+                        <>
+                          <Wifi className="h-4 w-4 text-green-500" />
+                          <span className="text-xs text-green-500 font-medium">Connected</span>
+                        </>
+                      ) : (
+                        <>
+                          <WifiOff className="h-4 w-4 text-red-500" />
+                          <span className="text-xs text-red-500 font-medium">Disconnected</span>
+                        </>
+                      )}
+                    </div>
+                    
+                    {/* Mobile Refresh Button */}
+                    <Button 
+                      onClick={handleManualRefresh}
+                      disabled={isRefreshing}
+                      size="sm"
+                      variant="ghost"
+                      className="text-muted-foreground hover:text-foreground disabled:opacity-50"
+                      title={isRefreshing ? "Refreshing..." : "Manual refresh"}
+                    >
+                      <RefreshCw className={`h-4 w-4 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    </Button>
+                  </div>
+                  
+                  {/* Mobile Auto-refresh Controls */}
+                  <div className="px-3 py-2 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Auto-refresh</span>
+                      <Button 
+                        onClick={toggleAutoRefresh}
+                        size="sm"
+                        variant="ghost"
+                        className={`text-xs px-2 py-1 h-6 ${
+                          autoRefresh 
+                            ? 'text-green-500 bg-green-500/10' 
+                            : 'text-muted-foreground'
+                        }`}
+                      >
+                        {autoRefresh ? 'ON' : 'OFF'}
+                      </Button>
+                    </div>
+                    
+                    {autoRefresh && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Interval</span>
+                        <select
+                          value={refreshInterval}
+                          onChange={(e) => handleIntervalChange(Number(e.target.value))}
+                          className="text-xs bg-muted/50 border border-border rounded px-2 py-1 text-muted-foreground"
+                        >
+                          <option value={1000}>1s</option>
+                          <option value={2000}>2s</option>
+                          <option value={5000}>5s</option>
+                          <option value={10000}>10s</option>
+                          <option value={30000}>30s</option>
+                        </select>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -419,51 +550,65 @@ export default function Dashboard() {
         {activeTab === "dashboard" ? (
           <>
             {/* Market Overview */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6 lg:mb-8">
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Market Cap</CardTitle>
+                <CardHeader className="pb-1 sm:pb-2">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Market Cap</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">$4T</div>
+                <CardContent className="pt-0">
+                  <div className="text-lg sm:text-xl lg:text-2xl font-bold">$4T</div>
                   <div className="text-xs text-red-500 flex items-center">
                     <TrendingDown className="h-3 w-3 mr-1" />
-                    2.86%
+                    <span className="truncate">2.86%</span>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">24h Volume</CardTitle>
+                <CardHeader className="pb-1 sm:pb-2">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">24h Volume</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">$89B</div>
+                <CardContent className="pt-0">
+                  <div className="text-lg sm:text-xl lg:text-2xl font-bold">$89B</div>
                   <div className="text-xs text-green-500 flex items-center">
                     <TrendingUp className="h-3 w-3 mr-1" />
-                    8.43%
+                    <span className="truncate">8.43%</span>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Fear & Greed</CardTitle>
+                <CardHeader className="pb-1 sm:pb-2">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Fear & Greed</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">73</div>
-                  <div className="text-xs text-green-500">Greed</div>
+                <CardContent className="pt-0">
+                  <div className="text-lg sm:text-xl lg:text-2xl font-bold">73</div>
+                  <div className="text-xs text-green-500 truncate">Greed</div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Last Update</CardTitle>
+                <CardHeader className="pb-1 sm:pb-2">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center justify-between">
+                    <span className="truncate">Data Status</span>
+                    <div className="flex items-center space-x-1 flex-shrink-0">
+                      <div className={`w-2 h-2 rounded-full ${
+                        isConnected ? 'bg-green-500' : 'bg-red-500'
+                      } ${autoRefresh ? 'animate-pulse' : ''}`} />
+                    </div>
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-lg font-bold">{lastUpdate.toLocaleTimeString()}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {isConnected ? "Live" : "Offline"}
+                <CardContent className="pt-0">
+                  <div className="space-y-0.5 sm:space-y-1">
+                    <div className="text-sm sm:text-lg font-bold">{lastUpdate.toLocaleTimeString()}</div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      {isConnected ? (
+                        autoRefresh ? `Auto: ${refreshInterval/1000}s` : "Manual"
+                      ) : "Offline"}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      #{refreshCount}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -471,12 +616,27 @@ export default function Dashboard() {
 
             {/* Crypto Table */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Live Prices</span>
-                  <Badge variant="secondary" className="text-xs">
-                    {Object.keys(prices).length} Assets
-                  </Badge>
+              <CardHeader className="pb-3 sm:pb-6">
+                <CardTitle className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center space-x-2 min-w-0">
+                    <span className="text-base sm:text-lg">Live Prices</span>
+                    {isRefreshing && (
+                      <div className="flex items-center space-x-1">
+                        <RefreshCw className="h-3 w-3 animate-spin text-primary" />
+                        <span className="text-xs text-primary hidden sm:inline">Updating...</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+                    <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                      {Object.keys(prices).length}
+                    </Badge>
+                    {autoRefresh && (
+                      <Badge variant="outline" className="text-xs text-green-500 border-green-500/30 px-2 py-0.5 hidden sm:inline-flex">
+                        Auto {refreshInterval/1000}s
+                      </Badge>
+                    )}
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
