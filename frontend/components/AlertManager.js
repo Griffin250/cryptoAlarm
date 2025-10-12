@@ -6,10 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { Alert, AlertDescription } from './ui/alert'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from './ui/dialog'
 import { Input } from './ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
-import { Plus, Edit, Trash2, Play, Pause, TrendingUp, TrendingDown, Bell, Activity } from 'lucide-react'
+import { Plus, Edit, Trash2, Play, Pause, TrendingUp, TrendingDown, Bell, Activity, AlertTriangle } from 'lucide-react'
 
 export default function AlertManager() {
   const [alerts, setAlerts] = useState([])
@@ -336,5 +336,3 @@ export default function AlertManager() {
     </div>
   )
 }
-
-export default AlertManager

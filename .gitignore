@@ -12,6 +12,11 @@ frontend/.next/
 frontend/.env.local
 frontend/.vercel/
 
+# Backup files
+*_backup.*
+*_new.*
+*_final.*
+
 # OS / IDE
 .DS_Store
 .vscode/

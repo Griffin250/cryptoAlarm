@@ -42,6 +42,7 @@ export default function Home() {
     fetchPrices();
     const interval = setInterval(fetchPrices, 2000);
     return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const triggerAlert = async () => {
