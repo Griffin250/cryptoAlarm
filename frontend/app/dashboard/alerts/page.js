@@ -6,6 +6,9 @@ import { DebugInfo } from "../../../components/DebugInfo"
 import Link from "next/link"
 import { ArrowLeft, Bell } from "lucide-react"
 
+// Force dynamic rendering to avoid build-time Supabase calls
+export const dynamic = 'force-dynamic'
+
 export default function AlertsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#1e2c47] to-[#0B1426]">

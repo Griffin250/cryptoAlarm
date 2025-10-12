@@ -13,8 +13,11 @@ export function DebugInfo() {
   const [backendTest, setBackendTest] = useState('Testing backend...')
 
   useEffect(() => {
-    checkSupabase()
-    checkBackend()
+    // Only run on client side to avoid build issues
+    if (typeof window !== 'undefined') {
+      checkSupabase()
+      checkBackend()
+    }
   }, [])
 
   const checkSupabase = async () => {

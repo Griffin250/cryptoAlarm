@@ -5,6 +5,9 @@ import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
 import Link from "next/link";
 import ResponsiveNavbar from "../../../components/ResponsiveNavbar";
+
+// Force dynamic rendering to avoid build-time issues
+export const dynamic = 'force-dynamic'
 import { 
   TrendingUp, TrendingDown, ArrowLeft, Plus, Minus, 
   DollarSign, Percent, BarChart3, PieChart, Target,

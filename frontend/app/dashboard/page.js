@@ -8,6 +8,9 @@ import { Alert, AlertDescription } from "../../components/ui/alert";
 import { AuthProvider } from "../../lib/AuthContext";
 import AlertManagerNew from "../../components/AlertManagerNew";
 import Link from "next/link";
+
+// Force dynamic rendering to avoid build-time Supabase calls
+export const dynamic = 'force-dynamic'
 import Image from "next/image";
 import { 
   TrendingUp, TrendingDown, Phone, Wifi, WifiOff, Star, 

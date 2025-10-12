@@ -6,6 +6,9 @@ import { Badge } from "../../../components/ui/badge";
 import { Alert, AlertDescription } from "../../../components/ui/alert";
 import Link from "next/link";
 import ResponsiveNavbar from "../../../components/ResponsiveNavbar";
+
+// Force dynamic rendering to avoid build-time issues
+export const dynamic = 'force-dynamic'
 import { 
   Settings, Bell, Phone, Globe, Shield, User, Volume2, Moon, Sun,
   Smartphone, Mail, Zap, AlertTriangle, CheckCircle, Save,
