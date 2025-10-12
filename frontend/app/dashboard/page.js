@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/ca
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
 import { Alert, AlertDescription } from "../../components/ui/alert";
-import AlertManager from "../../components/AlertManager";
+import { AuthProvider } from "../../lib/AuthContext";
+import AlertManagerNew from "../../components/AlertManagerNew";
 import Link from "next/link";
 import Image from "next/image";
 import { 
@@ -36,7 +37,7 @@ export default function Dashboard() {
   const [isConnected, setIsConnected] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [priceAnimations, setPriceAnimations] = useState({});
-  const [activeTab, setActiveTab] = useState("dashboard"); // "dashboard" or "alerts"
+  const [activeTab, setActiveTab] = useState("alerts"); // "dashboard" or "alerts"
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const previousPricesRef = useRef({});
   const priceHistoryRef = useRef({});
@@ -598,7 +599,7 @@ export default function Dashboard() {
                 {Object.keys(prices).length === 0 && (
                   <div className="text-center py-12 text-muted-foreground">
                     <div className="text-lg font-medium mb-2">Waiting for price data...</div>
-                    <div className="text-sm">Make sure your backend is running on port 8000</div>
+                    <div className="text-sm">Backend: https://cryptoalarm.onrender.com</div>
                   </div>
                 )}
               </CardContent>
@@ -607,8 +608,30 @@ export default function Dashboard() {
         ) : (
           <div className="flex flex-col min-h-full">
             {/* Alert Management Tab */}
-            <div className="flex-grow">
-              <AlertManager cryptoSymbols={Object.keys(cryptoInfo).map(key => cryptoInfo[key].symbol)} />
+            <div className="flex-grow space-y-4">
+              {/* Quick Access Card */}
+              <Card className="border-blue-200 bg-blue-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-blue-900">Enhanced Alert Management</h3>
+                      <p className="text-sm text-blue-700 mt-1">
+                        Use our new dedicated alerts page for full functionality, authentication, and debugging tools.
+                      </p>
+                    </div>
+                    <Link href="/dashboard/alerts">
+                      <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                        <Bell className="w-4 h-4 mr-2" />
+                        Open Alerts Page
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <AuthProvider>
+                <AlertManagerNew />
+              </AuthProvider>
             </div>
           </div>
         )}

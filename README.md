@@ -2,42 +2,79 @@
 
 # 🚨 CryptoAlarm - Never Miss a Crypto Move
 
-A **professional full-stack PWA application** that monitors cryptocurrency prices in real-time and triggers **voice alerts** when price targets are reached. Built with **FastAPI + Next.js** featuring a **CoinMarketCap-inspired design** with **mobile-first responsive UI**.
+A **professional full-stack PWA application** that monitors cryptocurrency prices in real-time and triggers **voice alerts** when price targets are reached. Built with **Next.js + Supabase + FastAPI** featuring a **modern CoinMarketCap-inspired design** with **mobile-first responsive UI**.
 
-🔥 **Live Demo**: Real-time price tracking with professional UI  
+� **Live Backend**: https://cryptoalarm.onrender.com  
+🔥 **Real-time Alerts**: Supabase-powered CRUD alert management  
 📞 **Voice Alerts**: Phone call notifications via Twilio  
 ⚡ **WebSocket**: Live data streaming from Binance  
-🎨 **Modern UI**: shadcn/ui components with dark theme  
+🎨 **Modern UI**: shadcn/ui + Radix UI components with dark theme  
 📱 **PWA Ready**: Install as native app on iOS & Android  
 🌐 **Responsive**: Mobile-optimized with hamburger navigation  
-🚀 **SEO Optimized**: Complete metadata and social sharing  
+� **Authentication**: Supabase Auth with Row Level Security  
+🗄️ **Database**: PostgreSQL with real-time subscriptions  
+
+## 📋 Table of Contents
+- [🌐 Live Demo](#-live-demo)
+- [✨ Features](#-features)
+- [🏗️ Project Structure](#️-project-structure)
+- [📦 Dependencies](#-dependencies)
+- [⚡ Quick Start](#-quick-start)
+- [🔧 Environment Setup](#-environment-setup)
+- [📱 Usage](#-usage)
+- [📱 PWA Installation](#-pwa-installation)
+- [🔮 Future Roadmap](#-future-roadmap)
+- [🚀 Deployment](#-deployment)
+- [🛠️ Development](#️-development)
+- [📞 Support & Troubleshooting](#-support--troubleshooting)
+
+---
+
+## 🌐 Live Demo
+- **Backend API**: [cryptoalarm.onrender.com](https://cryptoalarm.onrender.com)
+- **API Documentation**: [cryptoalarm.onrender.com/docs](https://cryptoalarm.onrender.com/docs)
+- **Frontend**: *Deploy and update this link with your frontend URL*
 
 ---
 
 ## ✨ Features
 
-### 🖥️ **Frontend (Next.js + PWA)**
+### 🖥️ **Frontend (Next.js 15 + PWA)**
 * **Progressive Web App** - Install as native app on iOS/Android with custom logo
 * **Mobile-First Responsive** - Hamburger navigation, touch-friendly interface
 * **Professional Dashboard** - CoinMarketCap-inspired design with tab navigation
 * **Real-time Price Updates** - Live WebSocket data every 2 seconds
-* **Alert Management System** - Complete UI for creating and managing price alerts
+* **Advanced Alert Management** - Complete CRUD system with Supabase integration
+* **Toast Notifications** - Success/error messages for all operations
 * **Market Overview** - Market cap, volume, Fear & Greed index
 * **Price Change Indicators** - Trending arrows and percentage changes
 * **Connection Status** - Real-time backend connectivity monitoring
 * **Cross-Device Compatibility** - Seamless experience on all screen sizes
-* **shadcn/ui Components** - Modern, accessible UI components
+* **Radix UI Components** - Modern, accessible UI primitives
+* **shadcn/ui Design System** - Consistent, beautiful components
 * **SEO Optimized** - Complete metadata, Open Graph, Twitter cards
 * **Offline Support** - Service worker for offline functionality
 
-### 🔧 **Backend (FastAPI)**
-* **Real-time Data Streaming** - Binance WebSocket integration for 11 cryptocurrencies
+### �️ **Database (Supabase PostgreSQL)**
+* **Authentication System** - Sign up, sign in, demo accounts
+* **Row Level Security** - User data protection and privacy
+* **Real-time Subscriptions** - Live updates when alerts change
+* **Alert Management** - Complete CRUD operations for price alerts
+* **Profile Management** - User profiles and preferences
+* **Alert Conditions** - Complex price and percentage-based conditions
+* **Notification Settings** - Email, SMS, push notification preferences
+* **Alert History** - Complete logs of triggered alerts
+* **Price History Cache** - Historical price data storage
+
+### �🔧 **Backend (FastAPI on Render)**
+* **Real-time Data Streaming** - Binance WebSocket integration for 11+ cryptocurrencies
 * **Smart Alert System** - Price target and percentage-based alert monitoring
 * **Voice Alert System** - Twilio integration for phone notifications when alerts trigger
 * **RESTful API** - Clean endpoints for price data and alert management
-* **Alert CRUD Operations** - Complete create, read, update, delete for alerts
+* **WebSocket Support** - Real-time price streaming to frontend
 * **CORS Support** - Proper frontend-backend communication
-* **Auto-documentation** - Swagger/OpenAPI docs included
+* **Auto-documentation** - Swagger/OpenAPI docs at `/docs`
+* **Production Deployment** - Hosted on Render with auto-scaling
 
 ---
 
@@ -45,7 +82,7 @@ A **professional full-stack PWA application** that monitors cryptocurrency price
 
 ```
 CryptoAlarm/
-├── backend/                    # FastAPI Backend
+├── backend/                    # FastAPI Backend (Deployed on Render)
 │   ├── app/
 │   │   ├── main.py            # FastAPI entry point + WebSocket + Alert APIs
 │   │   ├── models.py          # Pydantic models for alerts and data validation
@@ -58,26 +95,39 @@ CryptoAlarm/
 │   ├── requirements.txt       # Python dependencies
 │   └── .env                   # Environment variables
 │
-├── frontend/                   # Next.js PWA Frontend
+├── frontend/                   # Next.js 15 PWA Frontend
 │   ├── app/
 │   │   ├── page.js            # Homepage with responsive navigation
-│   │   ├── layout.js          # App layout with PWA metadata
+│   │   ├── layout.js          # App layout with PWA metadata + ToastProvider
 │   │   ├── globals.css        # CoinMarketCap-inspired theme + mobile styles
 │   │   ├── dashboard/
-│   │   │   └── page.js        # Main dashboard with mobile menu
+│   │   │   ├── page.js        # Main dashboard with tab navigation
+│   │   │   └── alerts/
+│   │   │       └── page.js    # Dedicated alerts management page
 │   │   └── premium/
 │   │       └── page.js        # Premium plans page
 │   ├── components/
-│   │   ├── AlertManager.js    # Complete alert management interface
+│   │   ├── AlertManagerNew.js # Advanced Supabase-powered alert management
+│   │   ├── QuickAuth.js       # Authentication component
+│   │   ├── DebugInfo.js       # System debugging and testing
 │   │   ├── InstallPrompt.js   # PWA install prompt component
-│   │   └── ui/                # shadcn/ui components
+│   │   └── ui/                # shadcn/ui + Radix UI components
 │   │       ├── button.js
 │   │       ├── card.js
 │   │       ├── badge.js
 │   │       ├── alert.js
-│   │       ├── dialog.js      # Modal dialogs
+│   │       ├── dialog.js      # Radix UI modal dialogs
 │   │       ├── input.js       # Form inputs
-│   │       └── select.js      # Dropdown selects
+│   │       ├── select.js      # Radix UI dropdown selects
+│   │       ├── tabs.js        # Tab navigation
+│   │       └── toast.js       # Toast notification system
+│   ├── lib/
+│   │   ├── alertService.js    # Supabase alert CRUD operations
+│   │   ├── authService.js     # Supabase authentication
+│   │   ├── supabase.js        # Supabase client configuration
+│   │   ├── AuthContext.js     # React auth context provider
+│   │   ├── api.js             # Axios backend API client
+│   │   └── backendIntegration.js # Backend sync utilities
 │   ├── public/
 │   │   ├── cryptoAlarmLogo.png # Custom app logo
 │   │   ├── manifest.json      # PWA manifest
@@ -159,15 +209,19 @@ datetime            # Timestamp management for alerts
 ### Frontend Dependencies
 ```json
 {
-  "next": "15.5.4",                    // React framework
-  "react": "19.1.0",                   // UI library
-  "tailwindcss": "^4",                 // CSS framework
-  "axios": "^1.12.2",                  // HTTP client
-  "@radix-ui/react-slot": "^1.0.0",    // shadcn/ui primitives
-  "class-variance-authority": "^0.7.0", // CSS utilities
-  "clsx": "^2.0.0",                    // Class name utility
-  "tailwind-merge": "^2.0.0",          // Tailwind class merger
-  "lucide-react": "^0.300.0"          // Icon library
+  "next": "15.5.4",                      // React framework with Turbopack
+  "react": "19.1.0",                     // UI library
+  "tailwindcss": "^4",                   // CSS framework
+  "axios": "^1.12.2",                    // HTTP client for backend API
+  "@supabase/supabase-js": "^2.75.0",    // Supabase client library
+  "@radix-ui/react-dialog": "^1.1.15",   // Modal primitives
+  "@radix-ui/react-select": "^2.2.6",    // Select primitives
+  "@radix-ui/react-slot": "^1.2.3",      // shadcn/ui primitives
+  "@radix-ui/react-tabs": "^1.1.13",     // Tab navigation primitives
+  "class-variance-authority": "^0.7.1",   // CSS utilities
+  "clsx": "^2.1.1",                      // Class name utility
+  "tailwind-merge": "^3.3.1",            // Tailwind class merger
+  "lucide-react": "^0.545.0"             // Icon library
 }
 ```
 
@@ -175,7 +229,28 @@ datetime            # Timestamp management for alerts
 
 ## 🔑 Environment Configuration
 
-### Backend Environment Variables
+### 1. Supabase Setup (Required)
+
+1. **Create Supabase Project**: Go to [supabase.com](https://supabase.com) and create a new project
+2. **Get Credentials**: Copy your project URL and anon key from Settings > API
+3. **Run Database Schema**: Execute the SQL schema from `supabase-schema-complete.sql` in Supabase SQL Editor
+
+### 2. Frontend Environment Variables
+
+Create a `.env.local` file in the `frontend/` directory:
+
+```ini
+# Supabase Configuration (Required)
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+
+# Backend Configuration (Optional - for price data)
+NEXT_PUBLIC_BACKEND_URL=https://cryptoalarm.onrender.com
+NEXT_PUBLIC_API_URL=https://cryptoalarm.onrender.com
+NEXT_PUBLIC_WS_URL=wss://cryptoalarm.onrender.com
+```
+
+### 3. Backend Environment Variables (Optional)
 
 Create a `.env` file in the `backend/` directory:
 
@@ -186,21 +261,21 @@ TWILIO_AUTH_TOKEN=your_auth_token_here
 TWILIO_PHONE_NUMBER=+1234567890        # Your Twilio phone number
 MY_PHONE_NUMBER=+1987654321            # Your personal phone number
 
-# API Configuration (optional)
-API_HOST=127.0.0.1
+# API Configuration
+API_HOST=0.0.0.0
 API_PORT=8000
 ```
 
-### Frontend Configuration
+### 🔧 Getting Supabase Credentials
 
-Create a `.env.local` file in the `frontend/` directory:
+1. **Sign up**: Go to [supabase.com](https://supabase.com) and create account
+2. **Create Project**: Click "New project" and set up your database
+3. **Get API Keys**: Go to Settings > API and copy:
+   - Project URL (anon key)
+   - API URL
+4. **Set up Database**: Run the complete schema from `supabase-schema-complete.sql`
 
-```ini
-# Backend API URL
-NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
-```
-
-### 🔧 Getting Twilio Credentials
+### 🔧 Getting Twilio Credentials (Optional)
 
 1. Sign up at [Twilio.com](https://www.twilio.com/)
 2. Get your **Account SID** and **Auth Token** from the dashboard
@@ -211,47 +286,67 @@ NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
 
 ## ▶️ Running the Application
 
-### Start Backend (Terminal 1)
-```bash
-cd backend
-uvicorn app.main:app --reload
--twilio_bypass: python -m uvicorn app.main:app --reload
+### Development Mode
 
-```
-
-**Backend will run at:**
-- API: [http://127.0.0.1:8000](http://127.0.0.1:8000)
-- Swagger Docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- Live Prices: [http://127.0.0.1:8000/prices](http://127.0.0.1:8000/prices)
-
-### Start Frontend (Terminal 2)
+#### Start Frontend Only (Recommended)
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
 
-**Frontend will run at:**
-- Dashboard: [http://localhost:3000](http://localhost:3000)
+**Frontend will run at:** [http://localhost:3000](http://localhost:3000)
+
+> **Note**: The frontend uses Supabase for alert management and the hosted backend at https://cryptoalarm.onrender.com for price data. No local backend setup required!
+
+#### Full Development Setup (Backend + Frontend)
+
+**Terminal 1 - Backend:**
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+**Terminal 2 - Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+**Production URLs:**
+- Backend API: [https://cryptoalarm.onrender.com](https://cryptoalarm.onrender.com)
+- Backend Docs: [https://cryptoalarm.onrender.com/docs](https://cryptoalarm.onrender.com/docs)
+- Live Prices: [https://cryptoalarm.onrender.com/prices](https://cryptoalarm.onrender.com/prices)
 
 ---
 
-## 🎯 API Endpoints
+## 🎯 Features Overview
 
-### Price Data
+### 🔔 Alert Management System (Supabase)
+- **Create Alerts**: Set price targets or percentage-based alerts
+- **Real-time Updates**: Live sync across all devices
+- **CRUD Operations**: Create, read, update, delete alerts
+- **User Authentication**: Secure sign-up/sign-in with demo mode
+- **Profile Management**: User preferences and settings
+- **Toast Notifications**: Success/error feedback for all operations
+
+### 📊 Price Monitoring (Backend API)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/prices` | Get current crypto prices for all monitored assets |
+| `GET` | `/prices` | Get current crypto prices for 11+ assets |
 | `GET` | `/test-alert` | Trigger a test voice alert |
-| `GET` | `/docs` | Interactive API documentation |
+| `GET` | `/docs` | Interactive Swagger API documentation |
 
-### Alert Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/alerts` | Create a new price or percentage alert |
-| `GET` | `/alerts` | Get all user alerts with status |
-| `GET` | `/alerts/{alert_id}` | Get specific alert details |
-| `PUT` | `/alerts/{alert_id}/status` | Update alert status (active/cancelled) |
-| `DELETE` | `/alerts/{alert_id}` | Delete a specific alert |
+### 🔧 System Features
+- **PWA Installation**: Install as native app on mobile/desktop
+- **Offline Support**: Works without internet connection
+- **Responsive Design**: Mobile-first with tablet/desktop optimization
+- **Dark Theme**: Professional CoinMarketCap-inspired design
+- **Real-time Status**: Connection monitoring and health checks
 
 ### Example API Responses
 
@@ -431,7 +526,71 @@ npm run dev
 
 ---
 
-## 🛠️ Development
+## � Deployment
+
+### Production Environment
+This project is deployed using modern cloud infrastructure:
+
+- **Backend**: FastAPI deployed on Render at `https://cryptoalarm.onrender.com`
+- **Database**: Supabase PostgreSQL with Row Level Security
+- **Frontend**: Next.js app with PWA capabilities (deployable on Vercel, Netlify, etc.)
+
+### Deploying Backend to Render
+
+1. **Create Render Account**: Sign up at [render.com](https://render.com)
+
+2. **Connect Repository**: 
+   - Link your GitHub repository
+   - Select the backend folder as root directory
+
+3. **Configure Build Settings**:
+   ```yaml
+   # render.yaml (optional)
+   services:
+     - type: web
+       name: cryptoalarm-backend
+       runtime: python3
+       buildCommand: pip install -r requirements.txt
+       startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+       healthCheckPath: /prices
+   ```
+
+4. **Environment Variables** (Add in Render dashboard):
+   ```
+   TWILIO_ACCOUNT_SID=your_twilio_sid
+   TWILIO_AUTH_TOKEN=your_twilio_token
+   TWILIO_PHONE_NUMBER=your_twilio_number
+   ```
+
+### Deploying Frontend
+
+1. **Update Environment Variables**:
+   ```bash
+   NEXT_PUBLIC_BACKEND_URL=https://your-backend.onrender.com
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+2. **Deploy to Vercel** (Recommended):
+   ```bash
+   npm install -g vercel
+   vercel --prod
+   ```
+
+3. **Or Deploy to Netlify**:
+   ```bash
+   npm run build
+   # Upload dist folder to Netlify
+   ```
+
+### Custom Domain Setup
+- Configure custom domain in your hosting platform
+- Update CORS settings in FastAPI backend if needed
+- Ensure HTTPS is enabled for PWA functionality
+
+---
+
+## �🛠️ Development
 
 ### Project Philosophy
 - **Clean Architecture**: Separation of concerns between frontend/backend
@@ -441,11 +600,20 @@ npm run dev
 - **Scalability**: Built to handle multiple users and assets
 
 ### Contributing
-1. Fork the repository
+We welcome contributions! To get started:
+
+1. Fork the repository from [GitHub](https://github.com/yourusername/cryptoAlarm-Version-2)
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Make your changes and test thoroughly
+4. Commit your changes (`git commit -m 'Add amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request with a detailed description
+
+Please ensure your code follows our standards:
+- Follow existing code style and formatting
+- Add appropriate comments for complex logic
+- Test your changes with both development and production environments
+- Update documentation if needed
 
 ---
 
@@ -471,10 +639,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### General Setup
 If you have any questions or need help setting up the project:
 
-1. Check the [Issues](https://github.com/yourusername/CryptoAlarm/issues) page
-2. Review the API documentation at `/docs` 
-3. Ensure all environment variables are properly configured
-4. Verify Twilio credentials and phone number setup
+1. Check the [Issues](https://github.com/yourusername/cryptoAlarm-Version-2/issues) page for common problems
+2. Review the API documentation at [cryptoalarm.onrender.com/docs](https://cryptoalarm.onrender.com/docs)
+3. Ensure all environment variables are properly configured (see `.env.example` files)
+4. Verify Supabase and Twilio credentials are valid
 
 ### PWA & Mobile Issues
 
