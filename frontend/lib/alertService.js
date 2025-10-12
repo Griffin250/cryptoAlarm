@@ -2,6 +2,21 @@ import { supabase } from './supabase'
 
 // Alert Service - handles all CRUD operations for alerts
 export class AlertService {
+
+  // Check if Supabase is properly configured
+  static isSupabaseConfigured() {
+    return process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  }
+
+  // Return demo error when Supabase is not configured
+  static getDemoError() {
+    return { 
+      error: { 
+        message: 'Demo mode: Supabase not configured. Add environment variables for full functionality.' 
+      },
+      data: null 
+    }
+  }
   
   // Ensure user profile exists
   static async ensureUserProfile(user) {
@@ -49,6 +64,10 @@ export class AlertService {
   // Get all alerts for the current user
   static async getUserAlerts() {
     try {
+      if (!this.isSupabaseConfigured()) {
+        return this.getDemoError()
+      }
+
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       
       if (userError || !user) {

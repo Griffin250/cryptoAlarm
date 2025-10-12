@@ -19,8 +19,17 @@ export function AuthProvider({ children }) {
       try {
         const { data: { user }, error } = await supabase.auth.getUser()
         
-        if (error) {
+        if (error && error.message !== 'Supabase not configured') {
           throw error
+        }
+
+        // If Supabase is not configured, just set loading to false
+        if (error && error.message === 'Supabase not configured') {
+          console.warn('Supabase not configured - running in demo mode')
+          setUser(null)
+          setProfile(null)
+          setLoading(false)
+          return
         }
 
         setUser(user)

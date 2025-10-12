@@ -25,6 +25,12 @@ export function DebugInfo() {
       // Test Supabase connection
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       
+      if (userError && userError.message === 'Supabase not configured') {
+        setSupabaseTest('⚠️ Supabase not configured - Running in demo mode')
+        toast.info('Demo mode: Add Supabase credentials for full functionality')
+        return
+      }
+      
       if (userError) {
         setSupabaseTest(`Auth Error: ${userError.message}`)
         toast.error(`Auth Error: ${userError.message}`)
@@ -39,6 +45,10 @@ export function DebugInfo() {
       
       // Test database connection
       const { data, error } = await supabase.from('alerts').select('count').limit(1)
+      
+      if (error && error.message === 'Supabase not configured') {
+        return // Already handled above
+      }
       
       if (error) {
         setSupabaseTest(prev => prev + ` | DB Error: ${error.message}`)
