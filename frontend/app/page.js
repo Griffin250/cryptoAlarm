@@ -9,7 +9,7 @@ import {
   TrendingUp, ArrowRight, Bell, Zap, Shield, Phone, 
   BarChart3, Globe, Star, CheckCircle, Play, Pause,
   DollarSign, Target, Percent, Clock, Users, Award,
-  Smartphone, Monitor, HeadphonesIcon, AlertTriangle, Crown, Sparkles
+  Smartphone, Monitor, HeadphonesIcon, AlertTriangle, Crown, Sparkles, RefreshCw
 } from 'lucide-react'
 
 const Home = () => {
@@ -178,17 +178,32 @@ const Home = () => {
             </Link>
             
             <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+              {/* Refresh button for small screens only */}
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="text-white/70 hover:text-white hover:bg-white/10 p-2 sm:hidden"
+                onClick={() => window.location.reload()}
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+              
               <Link href="/premium" className="hidden md:block">
                 <Button variant="outline" className="border-[#16C784] text-[#16C784] hover:bg-[#16C784] hover:text-white">
                   <Crown className="h-4 w-4 mr-2" />
                   Premium Plans
                 </Button>
               </Link>
-              <Link href="/coming-soon" className="hidden sm:block">
+              <Link href="/coming-soon" className="hidden md:block">
                 <Button variant="outline" className="border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white relative group overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
                   <Sparkles className="h-4 w-4 mr-2 relative z-10 group-hover:animate-pulse" />
                   <span className="relative z-10">Coming Soon</span>
+                </Button>
+              </Link>
+              <Link href="/coming-soon" className="sm:hidden">
+                <Button variant="outline" size="sm" className="border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white p-2">
+                  <Sparkles className="h-4 w-4 animate-pulse" />
                 </Button>
               </Link>
               <Link href="/dashboard">
@@ -244,12 +259,6 @@ const Home = () => {
                     className="hidden sm:inline animate-in fade-in-0 slide-in-from-right-2 duration-700 delay-200"
                   >
                     {' '}- {upcomingFeatures[currentFeatureIndex].description}
-                  </span>
-                  <span 
-                    key={`short-${currentFeatureIndex}`}
-                    className="sm:hidden animate-in fade-in-0 slide-in-from-right-2 duration-500 delay-200"
-                  >
-                    {' '}- {upcomingFeatures[currentFeatureIndex].shortDesc}
                   </span>
                 </p>
               </div>
@@ -743,6 +752,9 @@ const Home = () => {
                 </Link>
                 <Link href="/dashboard" className="block text-gray-400 hover:text-white transition-colors">
                   Set Alerts
+                </Link>
+                <Link href="/coming-soon" className="block text-purple-400 hover:text-purple-300 transition-colors font-medium">
+                  Coming Soon Features
                 </Link>
                 <Link href="#features" className="block text-gray-400 hover:text-white transition-colors">
                   Features
