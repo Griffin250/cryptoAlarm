@@ -9,12 +9,54 @@ import {
   TrendingUp, ArrowRight, Bell, Zap, Shield, Phone, 
   BarChart3, Globe, Star, CheckCircle, Play, Pause,
   DollarSign, Target, Percent, Clock, Users, Award,
-  Smartphone, Monitor, HeadphonesIcon, AlertTriangle, Crown
+  Smartphone, Monitor, HeadphonesIcon, AlertTriangle, Crown, Sparkles
 } from 'lucide-react'
 
 const Home = () => {
   const [animatedPrice, setAnimatedPrice] = useState(67234.56)
   const [isPlaying, setIsPlaying] = useState(true)
+  const [showBanner, setShowBanner] = useState(true)
+  const [currentFeatureIndex, setCurrentFeatureIndex] = useState(0)
+
+  // Upcoming features with rotating content
+  const upcomingFeatures = [
+    {
+      name: "Why Is It Moving?",
+      description: "lightning-fast, AI-driven explanations of crypto moves",
+      shortDesc: "AI crypto insights",
+      icon: <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2 group-hover:rotate-12 transition-transform" />
+    },
+    {
+      name: "AI Trading Agents",
+      description: "intelligent buy/sell automation with advanced risk management",
+      shortDesc: "AI trading bots",
+      icon: <Zap className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2 group-hover:scale-110 transition-transform" />
+    },
+    {
+      name: "Technical Analyzer Pro",
+      description: "advanced chart patterns and technical indicator analysis",
+      shortDesc: "Technical analysis",
+      icon: <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2 group-hover:rotate-12 transition-transform" />
+    },
+    {
+      name: "Fundamental Scanner",
+      description: "deep-dive fundamental analysis and market sentiment tracking",
+      shortDesc: "Fundamental analysis",
+      icon: <Globe className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2 group-hover:rotate-y-12 transition-transform" />
+    },
+    {
+      name: "Portfolio Optimizer",
+      description: "AI-powered portfolio balancing and risk optimization tools",
+      shortDesc: "Portfolio optimization",
+      icon: <Target className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2 group-hover:scale-110 transition-transform" />
+    },
+    {
+      name: "Market Sentiment AI",
+      description: "real-time social media and news sentiment analysis engine",
+      shortDesc: "Sentiment analysis",
+      icon: <Users className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2 group-hover:bounce transition-transform" />
+    }
+  ]
 
   // Simulate price changes for animation
   useEffect(() => {
@@ -29,6 +71,15 @@ const Home = () => {
 
     return () => clearInterval(interval)
   }, [isPlaying])
+
+  // Rotate through upcoming features
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentFeatureIndex(prev => (prev + 1) % upcomingFeatures.length)
+    }, 4000) // Change every 4 seconds
+
+    return () => clearInterval(interval)
+  }, [upcomingFeatures.length])
 
   const features = [
     {
@@ -127,10 +178,17 @@ const Home = () => {
             </Link>
             
             <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-              <Link href="/premium" className="hidden sm:block">
+              <Link href="/premium" className="hidden md:block">
                 <Button variant="outline" className="border-[#16C784] text-[#16C784] hover:bg-[#16C784] hover:text-white">
                   <Crown className="h-4 w-4 mr-2" />
                   Premium Plans
+                </Button>
+              </Link>
+              <Link href="/coming-soon" className="hidden sm:block">
+                <Button variant="outline" className="border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white relative group overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
+                  <Sparkles className="h-4 w-4 mr-2 relative z-10 group-hover:animate-pulse" />
+                  <span className="relative z-10">Coming Soon</span>
                 </Button>
               </Link>
               <Link href="/dashboard">
@@ -144,6 +202,92 @@ const Home = () => {
           </div>
         </div>
       </nav>
+
+      {/* New Feature Announcement Banner */}
+      {showBanner && (
+      <div className="relative bg-gradient-to-r from-[#3861FB] via-[#4F46E5] to-[#5B21B6] border-b border-purple-600/30 overflow-hidden animate-in slide-in-from-top duration-500">
+        <div className="absolute inset-0 bg-black/20"></div>
+        
+        {/* Animated background particles */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-2 left-10 w-1 h-1 bg-yellow-300 rounded-full animate-pulse"></div>
+          <div className="absolute top-6 right-20 w-1 h-1 bg-white rounded-full animate-ping"></div>
+          <div className="absolute bottom-3 left-1/3 w-1 h-1 bg-yellow-300 rounded-full animate-bounce"></div>
+          <div className="absolute top-4 left-1/2 w-1 h-1 bg-white rounded-full animate-pulse delay-700"></div>
+        </div>
+        
+        <div className="relative container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold px-2 py-1 text-xs animate-pulse">
+                  NEW
+                </Badge>
+                <div 
+                  key={`icon-${currentFeatureIndex}`}
+                  className="animate-in fade-in-0 zoom-in-50 duration-500"
+                >
+                  {upcomingFeatures[currentFeatureIndex].icon}
+                </div>
+              </div>
+              <div className="min-w-0">
+                <p className="text-white font-medium text-sm sm:text-base truncate">
+                  <span className="hidden sm:inline">Introducing </span>
+                  <span 
+                    key={currentFeatureIndex}
+                    className="font-bold text-yellow-300 animate-in fade-in-0 slide-in-from-bottom-2 duration-500"
+                  >
+                    &ldquo;{upcomingFeatures[currentFeatureIndex].name}&rdquo;
+                  </span>
+                  <span 
+                    key={`desc-${currentFeatureIndex}`}
+                    className="hidden sm:inline animate-in fade-in-0 slide-in-from-right-2 duration-700 delay-200"
+                  >
+                    {' '}- {upcomingFeatures[currentFeatureIndex].description}
+                  </span>
+                  <span 
+                    key={`short-${currentFeatureIndex}`}
+                    className="sm:hidden animate-in fade-in-0 slide-in-from-right-2 duration-500 delay-200"
+                  >
+                    {' '}- {upcomingFeatures[currentFeatureIndex].shortDesc}
+                  </span>
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <Link href="/coming-soon" className='cursor-pointer'>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="bg-white/10 cursor-pointer border-white/30 text-white hover:bg-white hover:text-[#3861FB] transition-all duration-300 text-xs sm:text-sm group"
+                >
+                  <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2 group-hover:rotate-12 transition-transform" />
+                  <span className="hidden sm:inline">Learn More</span>
+                  <span className="sm:hidden">Learn</span>
+                  <ArrowRight className="h-3 w-3 ml-1 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              
+              {/* Close button for mobile */}
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="text-white/70 hover:text-white p-1 sm:hidden"
+                onClick={() => setShowBanner(false)}
+              >
+                ×
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Animated background effect */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse"></div>
+        </div>
+      </div>
+      )}
 
       {/* Hero Section */}
       <section className="relative pt-20 pb-32 overflow-hidden">
