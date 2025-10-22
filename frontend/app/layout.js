@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import InstallPrompt from "../components/InstallPrompt";
 import { ToastProvider } from "../components/ui/toast";
+import { AuthProvider } from "../lib/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -156,10 +157,12 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ToastProvider>
-          {children}
-          <InstallPrompt />
-        </ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            {children}
+            <InstallPrompt />
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

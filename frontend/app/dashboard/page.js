@@ -31,6 +31,15 @@ const cryptoInfo = {
   USDCUSDT: { name: "USD Coin", symbol: "USDC", icon: "💵", rank: 9 },
   SUIUSDT: { name: "Sui", symbol: "SUI", icon: "🌊", rank: 10 },
   PEPEUSDT: { name: "Pepe", symbol: "PEPE", icon: "🐸", rank: 11 },
+  TRXUSDT: { name: "TRON", symbol: "TRX", icon: "🚀", rank: 12 },
+  LINKUSDT: { name: "Chainlink", symbol: "LINK", icon: "🔗", rank: 13 },
+  LTCUSDT: { name: "Litecoin", symbol: "LTC", icon: "Ł", rank: 14 },
+  MATICUSDT: { name: "Polygon", symbol: "MATIC", icon: "🟪", rank: 15 },
+  BCHUSDT: { name: "Bitcoin Cash", symbol: "BCH", icon: "Ƀ", rank: 16 },
+  DOTUSDT: { name: "Polkadot", symbol: "DOT", icon: "●", rank: 17 },
+  AVAXUSDT: { name: "Avalanche", symbol: "AVAX", icon: "🗻", rank: 18 },
+  UNIUSDT: { name: "Uniswap", symbol: "UNI", icon: "🦄", rank: 19 },
+  XLMUSDT: { name: "Stellar", symbol: "XLM", icon: "★", rank: 20 }
 };
 
 export default function Dashboard() {
@@ -38,6 +47,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [alertMsg, setAlertMsg] = useState("");
   const [isConnected, setIsConnected] = useState(true);
+  const [globalMetrics, setGlobalMetrics] = useState(null);
+  const [metricsLoading, setMetricsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [priceAnimations, setPriceAnimations] = useState({});
   const [activeTab, setActiveTab] = useState("alerts"); // "dashboard" or "alerts"
@@ -51,6 +62,27 @@ export default function Dashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshCount, setRefreshCount] = useState(0);
   const intervalRef = useRef(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const coinsPerPage = 10;
+  const coinSymbols = Object.keys(cryptoInfo);
+  const totalPages = Math.ceil(coinSymbols.length / coinsPerPage);
+  const paginatedSymbols = coinSymbols.slice((currentPage - 1) * coinsPerPage, currentPage * coinsPerPage);
+
+  // Fetch global metrics from backend
+  const fetchGlobalMetrics = async () => {
+    setMetricsLoading(true);
+    try {
+      const res = await api.get("/global-metrics");
+      setGlobalMetrics(res.data);
+    } catch (error) {
+      console.error("Failed to fetch global metrics:", error);
+      setGlobalMetrics(null);
+    } finally {
+      setMetricsLoading(false);
+    }
+  };
 
   // Enhanced fetchPrices function with refresh controls
   const fetchPrices = async (isManual = false) => {
@@ -112,6 +144,7 @@ export default function Dashboard() {
   useEffect(() => {
     // Initial fetch
     fetchPrices();
+    fetchGlobalMetrics();
     
     // Clear any existing interval
     if (intervalRef.current) {
@@ -267,7 +300,7 @@ export default function Dashboard() {
                   <Bell className="h-4 w-4 xl:mr-2" />
                   <span className="hidden xl:inline">Alerts</span>
                 </Button>
-                <Link href="/dashboard/portfolio">
+                <Link href="/portfolio">
                   <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground px-2 xl:px-3">
                     <Globe className="h-4 w-4 xl:mr-2" />
                     <span className="hidden xl:inline">Portfolio</span>
@@ -348,10 +381,7 @@ export default function Dashboard() {
                       <option value={30000}>30s</option>
                     </select>
                   )}
-                </div>
-              </div>
-
-              {/* Test Alert Button - Responsive sizing */}
+                                {/* Test Alert Button - Responsive sizing */}
               <Button 
                 onClick={sendTestAlert}
                 disabled={loading}
@@ -361,15 +391,15 @@ export default function Dashboard() {
                 <Phone className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline text-xs sm:text-sm">{loading ? "Calling..." : "Test Alert"}</span>
               </Button>
+                </div>
+              </div>
+
+           
 
               {/* Desktop Action Buttons - Hidden on smaller screens */}
               <div className="hidden lg:flex items-center space-x-1">
-                <Link href="/dashboard/settings">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground px-2">
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="/dashboard/profile">
+             
+                <Link href="/profile">
                   <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground px-2">
                     <User className="h-4 w-4" />
                   </Button>
@@ -431,7 +461,7 @@ export default function Dashboard() {
                   <Bell className="h-4 w-4 mr-3" />
                   Alerts
                 </Button>
-                <Link href="/dashboard/portfolio" onClick={() => setMobileMenuOpen(false)}>
+                <Link href="/portfolio" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
                     <Globe className="h-4 w-4 mr-3" />
                     Portfolio
@@ -445,13 +475,13 @@ export default function Dashboard() {
                 </Link>
                 
                 <div className="border-t border-gray-800/50 pt-2 mt-2">
-                  <Link href="/dashboard/settings" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/settings" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
                       <Settings className="h-4 w-4 mr-3" />
                       Settings
                     </Button>
                   </Link>
-                  <Link href="/dashboard/profile" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
                       <User className="h-4 w-4 mr-3" />
                       Profile
@@ -522,7 +552,18 @@ export default function Dashboard() {
                           <option value={30000}>30s</option>
                         </select>
                       </div>
+                      
                     )}
+                       {/* Test Alert Button - Responsive sizing */}
+              <Button 
+                onClick={sendTestAlert}
+                disabled={loading}
+                size="sm"
+                className="bg-gradient-to-r from-[#16C784] to-[#10A96B] hover:from-[#14B575] hover:to-[#0E8B56] text-white px-2 sm:px-3"
+              >
+                <Phone className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline text-xs sm:text-sm">{loading ? "Calling..." : "Test Alert"}</span>
+              </Button>
                   </div>
                 </div>
               </nav>
@@ -534,14 +575,7 @@ export default function Dashboard() {
       {/* Alert Message */}
       {alertMsg && (
         <div className="container mx-auto px-4 pt-4">
-          <Alert className={`${alertMsg === "success" ? "border-green-500 bg-green-500/10" : "border-red-500 bg-red-500/10"}`}>
-            <Phone className="h-4 w-4" />
-            <AlertDescription className="text-white">
-              {alertMsg === "success" 
-                ? "📞 Voice alert sent successfully! Your phone should ring shortly." 
-                : "⚠️ Failed to send alert. Please check your connection and try again."}
-            </AlertDescription>
-          </Alert>
+          {/* Only show alertMsg, not the info card you requested to remove */}
         </div>
       )}
 
@@ -550,69 +584,80 @@ export default function Dashboard() {
         {activeTab === "dashboard" ? (
           <>
             {/* Market Overview */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6 lg:mb-8">
-              <Card>
-                <CardHeader className="pb-1 sm:pb-2">
-                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Market Cap</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-lg sm:text-xl lg:text-2xl font-bold">$4T</div>
-                  <div className="text-xs text-red-500 flex items-center">
-                    <TrendingDown className="h-3 w-3 mr-1" />
-                    <span className="truncate">2.86%</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-1 sm:pb-2">
-                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">24h Volume</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-lg sm:text-xl lg:text-2xl font-bold">$89B</div>
-                  <div className="text-xs text-green-500 flex items-center">
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    <span className="truncate">8.43%</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-1 sm:pb-2">
-                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Fear & Greed</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-lg sm:text-xl lg:text-2xl font-bold">73</div>
-                  <div className="text-xs text-green-500 truncate">Greed</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-1 sm:pb-2">
-                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center justify-between">
-                    <span className="truncate">Data Status</span>
-                    <div className="flex items-center space-x-1 flex-shrink-0">
-                      <div className={`w-2 h-2 rounded-full ${
-                        isConnected ? 'bg-green-500' : 'bg-red-500'
-                      } ${autoRefresh ? 'animate-pulse' : ''}`} />
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6 lg:mb-8">
+                <Card>
+                  <CardHeader className="pb-1 sm:pb-2">
+                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Market Cap</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="text-lg sm:text-xl lg:text-2xl font-bold">
+                      {metricsLoading ? 'Loading...' : globalMetrics ? `$${Number(globalMetrics.totalmarketcap).toLocaleString(undefined, {maximumFractionDigits: 0})}` : '$3.5T'}
                     </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-0.5 sm:space-y-1">
-                    <div className="text-sm sm:text-lg font-bold">{lastUpdate.toLocaleTimeString()}</div>
+                    <div className="text-xs text-muted-foreground flex items-center">
+                      <Globe className="h-3 w-3 mr-1" />
+                      <span className="truncate">Active Cryptos: {globalMetrics?.active_cryptocurrencies ?? '9,500'}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-1 sm:pb-2">
+                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">24h Volume</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="text-lg sm:text-xl lg:text-2xl font-bold">
+                      {metricsLoading ? 'Loading...' : globalMetrics ? `$${Number(globalMetrics.totalvolume24h).toLocaleString(undefined, {maximumFractionDigits: 0})}` : '$90B'}
+                    </div>
+                    <div className="text-xs text-muted-foreground flex items-center">
+                      <BarChart3 className="h-3 w-3 mr-1" />
+                      <span className="truncate">Active Exchanges: {globalMetrics?.active_exchanges ?? '650'}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-1 sm:pb-2">
+                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">BTC/ETH Dominance</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="text-lg sm:text-xl lg:text-2xl font-bold">
+                      BTC: {metricsLoading ? '--' : globalMetrics?.btc_dominance?.toFixed(2) ?? '52.1'}%
+                    </div>
+                    <div className="text-lg sm:text-xl lg:text-2xl font-bold">
+                      ETH: {metricsLoading ? '--' : globalMetrics?.eth_dominance?.toFixed(2) ?? '17.3'}%
+                    </div>
                     <div className="text-xs text-muted-foreground truncate">
-                      {isConnected ? (
-                        autoRefresh ? `Auto: ${refreshInterval/1000}s` : "Manual"
-                      ) : "Offline"}
+                      Last Updated: {globalMetrics?.last_updated ? new Date(globalMetrics.last_updated).toLocaleString() : '--'}
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      #{refreshCount}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-1 sm:pb-2">
+                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center justify-between">
+                      <span className="truncate">Data Status</span>
+                      <div className="flex items-center space-x-1 flex-shrink-0">
+                        <div className={`w-2 h-2 rounded-full ${
+                          isConnected ? 'bg-green-500' : 'bg-red-500'
+                        } ${autoRefresh ? 'animate-pulse' : ''}`} />
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="space-y-0.5 sm:space-y-1">
+                      <div className="text-sm sm:text-lg font-bold">{lastUpdate.toLocaleTimeString()}</div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {isConnected ? (
+                          autoRefresh ? `Auto: ${refreshInterval/1000}s` : "Manual"
+                        ) : "Offline"}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        #{refreshCount}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  </CardContent>
+                </Card>
+              </div>
 
             {/* Crypto Table */}
             <Card>
@@ -640,123 +685,76 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {Object.entries(prices)
-                    .sort(([aSymbol], [bSymbol]) => {
-                      const aRank = cryptoInfo[aSymbol]?.rank || 999;
-                      const bRank = cryptoInfo[bSymbol]?.rank || 999;
-                      return aRank - bRank;
-                    })
-                    .map(([symbol, price], index) => {
-                      const info = cryptoInfo[symbol];
-                      if (!info) return null;
 
-                      const priceChange = getPriceChangeInfo(symbol);
-                      const isAnimating = priceAnimations[symbol]?.isFlashing;
-
-                      return (
-                        <div 
-                          key={symbol} 
-                          className={`flex items-center justify-between p-3 sm:p-4 rounded-lg border transition-all duration-500 ${
-                            isAnimating 
-                              ? priceAnimations[symbol]?.trend === "up" 
-                                ? "bg-green-500/20 border-green-500/50" 
-                                : "bg-red-500/20 border-red-500/50"
-                              : "bg-muted/30 border-border hover:bg-muted/50"
-                          }`}
-                        >
-                          {/* Left - Crypto Info */}
-                          <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
-                            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-                              <div className={`text-xl sm:text-2xl flex-shrink-0 ${isAnimating ? 'animate-pulse' : ''}`}>
-                                {info.icon}
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="font-semibold text-foreground truncate text-sm sm:text-base">{info.name}</div>
-                                <div className="text-xs sm:text-sm text-muted-foreground">{info.symbol}</div>
-                              </div>
-                            </div>
-                            
-                            <Badge variant="outline" className="text-xs flex-shrink-0 hidden sm:inline-flex">
-                              #{info.rank}
-                            </Badge>
-                          </div>
-
-                          {/* Right - Price & Change */}
-                          <div className="flex items-center space-x-2 sm:space-x-6 flex-shrink-0">
-                            {/* Price */}
-                            <div className="text-right">
-                              <div className={`text-sm sm:text-xl font-bold transition-all duration-300 ${
-                                isAnimating ? 'scale-105' : ''
-                              }`}>
-                                ${price.toLocaleString(undefined, { 
-                                  minimumFractionDigits: 2, 
-                                  maximumFractionDigits: price < 1 ? 8 : 2 
-                                })}
-                              </div>
-                              {/* Show rank on mobile */}
-                              <div className="text-xs text-muted-foreground sm:hidden">
-                                #{info.rank}
-                              </div>
-                            </div>
-
-                            {/* Price Change & Trend */}
-                            <div className="flex items-center space-x-1 sm:space-x-3">
-                              {priceChange && (
-                                <div className={`flex items-center space-x-1 transition-all duration-300 ${
-                                  priceChange.trend === "up" ? "text-green-500" : 
-                                  priceChange.trend === "down" ? "text-red-500" : "text-muted-foreground"
-                                }`}>
-                                  {priceChange.trend === "up" ? (
-                                    <TrendingUp className={`h-3 w-3 sm:h-4 sm:w-4 ${
-                                      priceChange.trendStrength === "strong" ? "sm:h-5 sm:w-5" : ""
-                                    }`} />
-                                  ) : (
-                                    <TrendingDown className={`h-3 w-3 sm:h-4 sm:w-4 ${
-                                      priceChange.trendStrength === "strong" ? "sm:h-5 sm:w-5" : ""
-                                    }`} />
-                                  )}
-                                  <span className="text-xs sm:text-sm font-medium">
-                                    {priceChange.rawChange > 0 ? "+" : ""}{priceChange.rawChange.toFixed(2)}%
-                                  </span>
-                                </div>
-                              )}
-                              
-                              {/* Trend Strength Badge */}
-                              {priceChange && priceChange.trendStrength !== "moderate" && (
-                                <Badge 
-                                  variant={priceChange.trendStrength === "strong" ? "destructive" : "secondary"}
-                                  className="text-xs"
-                                >
-                                  {priceChange.trendStrength}
-                                </Badge>
-                              )}
-                            </div>
-
-                            {/* Mini Chart Visualization */}
-                            <div className="w-24 h-8 bg-muted rounded flex items-center justify-center relative overflow-hidden">
-                              <div className={`absolute inset-0 flex items-center justify-center transition-all duration-1000 ${
-                                priceChange && priceChange.trend === "up" ? "bg-gradient-to-r from-green-500/20 to-green-500/40" : 
-                                priceChange && priceChange.trend === "down" ? "bg-gradient-to-r from-red-500/20 to-red-500/40" : 
-                                "bg-muted-foreground/20"
-                              }`}>
-                                {/* Animated bar based on price movement */}
-                                <div className={`h-1 rounded transition-all duration-500 ${
-                                  priceChange && priceChange.trend === "up" ? "bg-green-500 w-full" : 
-                                  priceChange && priceChange.trend === "down" ? "bg-red-500 w-full" : 
-                                  "bg-muted-foreground w-1/2"
-                                } ${priceChange && priceChange.isFlashing ? "animate-pulse" : ""}`} />
-                              </div>
-                              
-                              {/* Live indicator dot */}
-                              <div className={`absolute right-1 top-1 w-2 h-2 rounded-full ${
-                                isConnected ? "bg-green-400 animate-pulse" : "bg-red-400"
-                              }`} />
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-xs sm:text-sm lg:text-base">
+                    <thead className="bg-muted-foreground/10">
+                      <tr className="text-left">
+                        <th className="px-2 py-2">#</th>
+                        <th className="px-2 py-2">Name</th>
+                        <th className="px-2 py-2">Price</th>
+                        <th className="px-2 py-2">1h %</th>
+                        <th className="px-2 py-2">24h %</th>
+                        <th className="px-2 py-2">7d %</th>
+                        <th className="px-2 py-2">Market Cap</th>
+                        <th className="px-2 py-2">Volume(24h)</th>
+                        <th className="px-2 py-2">Circulating Supply</th>
+                        <th className="px-2 py-2">Buy</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedSymbols
+                        .map((symbol, index) => {
+                          const info = cryptoInfo[symbol];
+                          // Use live price if available, otherwise fallback to dummy price
+                          const price = prices[symbol] !== undefined ? prices[symbol] : (100 + Math.random() * 1000);
+                          // Dummy data for columns not provided by Binance
+                          const dummy = {
+                            marketCap: [458808636051, 148700367781, 142480900481, 98825656395, 28881930008, 22490253551, 12021097354, 11672997965, 11058815289, 182421353788][index % 10],
+                            volume24h: [45520822427, 3677514942, 4470494845, 7312311059, 21571298134, 1078054564, 2569312755, 1038184409, 342805244, 168703181674][index % 10],
+                            supply: [120690000, 139180000, 59970000, 546660000, 151450000, 35850000, 336680000, 678090000, 11060000, 182410000000][index % 10],
+                            change24h: [-5.30, -2.18, -4.43, -7.11, -5.47, -6.25, -3.90, -5.86, -0.04, -0.05][index % 10],
+                            change7d: [-4.84, -8.50, -2.26, -8.15, -3.94, -6.76, -7.73, -4.99, -0.08, -0.04][index % 10]
+                          };
+                          const priceChange = getPriceChangeInfo(symbol);
+                          const isAnimating = priceAnimations[symbol]?.isFlashing;
+                          // Use real icon if available, fallback to emoji
+                          let iconElement;
+                          const iconPath = `/cryptoIcons/${info.symbol}.png`;
+                          iconElement = (
+                            <Image src={iconPath} alt={info.symbol} width={28} height={28} className="rounded-full" onError={e => {e.target.onerror=null;e.target.src='';}} />
+                          );
+                          // If image fails to load, fallback to emoji
+                          // Next.js Image does not support onError fallback, so we show both and hide image if not loaded
+                          // For best UX, you should ensure all icons exist in public/cryptoIcons
+                          return (
+                            <tr key={symbol} className={`border-b ${isAnimating ? 'bg-green-50 dark:bg-green-900/20' : 'bg-background'}`}>
+                              <td className="px-2 py-2 font-bold">{info.rank}</td>
+                              <td className="px-2 py-2 flex items-center gap-2 min-w-[120px]">
+                                <span className="relative">
+                                  {iconElement}
+                                  <span className="absolute left-0 top-0 text-xl" style={{display: 'none'}}>{info.icon}</span>
+                                </span>
+                                <span className="font-semibold text-foreground">{info.name}</span>
+                                <span className="text-muted-foreground text-xs">{info.symbol}</span>
+                              </td>
+                              <td className="px-2 py-2 font-bold">
+                                ${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: price < 1 ? 8 : 2 })}
+                              </td>
+                              <td className={`px-2 py-2 font-medium ${priceChange && priceChange.rawChange > 0 ? 'text-green-500' : 'text-red-500'}`}>{priceChange ? priceChange.rawChange.toFixed(2) + '%' : '--'}</td>
+                              <td className={`px-2 py-2 font-medium ${dummy.change24h > 0 ? 'text-green-500' : 'text-red-500'}`}>{dummy.change24h}%</td>
+                              <td className={`px-2 py-2 font-medium ${dummy.change7d > 0 ? 'text-green-500' : 'text-red-500'}`}>{dummy.change7d}%</td>
+                              <td className="px-2 py-2">${dummy.marketCap.toLocaleString()}</td>
+                              <td className="px-2 py-2">${dummy.volume24h.toLocaleString()}</td>
+                              <td className="px-2 py-2">{dummy.supply.toLocaleString()}</td>
+                              <td className="px-2 py-2">
+                                <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-bold transition-all duration-200">Buy</button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
                 </div>
 
                 {Object.keys(prices).length === 0 && (
@@ -773,24 +771,7 @@ export default function Dashboard() {
             {/* Alert Management Tab */}
             <div className="flex-grow space-y-4">
               {/* Quick Access Card */}
-              <Card className="border-blue-200 bg-blue-50">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium text-blue-900">Enhanced Alert Management</h3>
-                      <p className="text-sm text-blue-700 mt-1">
-                        Use our new dedicated alerts page for full functionality, authentication, and debugging tools.
-                      </p>
-                    </div>
-                    <Link href="/dashboard/alerts">
-                      <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                        <Bell className="w-4 h-4 mr-2" />
-                        Open Alerts Page
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
+      
 
               <AuthProvider>
                 <AlertManagerNew />

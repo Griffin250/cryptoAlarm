@@ -19,13 +19,14 @@ export function AuthProvider({ children }) {
       try {
         const { data: { user }, error } = await supabase.auth.getUser()
         
-        if (error && error.message !== 'Supabase not configured') {
-          throw error
-        }
-
-        // If Supabase is not configured, just set loading to false
-        if (error && error.message === 'Supabase not configured') {
-          console.warn('Supabase not configured - running in demo mode')
+        if (error) {
+          if (error.message === 'Supabase not configured') {
+            console.error('Supabase authentication is required but not configured. Please set up NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.')
+            setError('Authentication service is not configured. Please contact support.')
+          } else {
+            console.error('Error getting user:', error)
+            setError(error.message)
+          }
           setUser(null)
           setProfile(null)
           setLoading(false)
@@ -137,15 +138,63 @@ export function AuthProvider({ children }) {
 
   const updateProfile = async (profileData) => {
     try {
+      setError(null)
+      console.log('Updating profile with data:', profileData)
+      
       const { data, error } = await UserService.updateUserProfile(profileData)
       
       if (error) {
-        throw error
+        throw new Error(error)
+      }
+      
+      console.log('Profile updated successfully:', data)
+      setProfile(data)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error in updateProfile:', error)
+      setError(error.message)
+      return { data: null, error: error.message }
+    }
+  }
+
+  const updateAvatar = async (avatarFile) => {
+    try {
+      setError(null)
+      
+      // Convert file to base64 or upload to storage service
+      let avatarUrl = null
+      
+      if (avatarFile && typeof avatarFile === 'string') {
+        // If it's already a base64 string or URL
+        avatarUrl = avatarFile
+      } else if (avatarFile instanceof File) {
+        // Convert file to base64 for now
+        // In production, you'd upload to a service like Supabase Storage
+        const reader = new FileReader()
+        avatarUrl = await new Promise((resolve, reject) => {
+          reader.onload = (e) => resolve(e.target.result)
+          reader.onerror = (e) => reject(new Error('Failed to read file'))
+          reader.readAsDataURL(avatarFile)
+        })
+      }
+      
+      if (!avatarUrl) {
+        throw new Error('No avatar data provided')
+      }
+      
+      const { data, error } = await UserService.updateUserProfile({ 
+        ...profile, 
+        avatar_url: avatarUrl 
+      })
+      
+      if (error) {
+        throw new Error(error)
       }
       
       setProfile(data)
       return { data, error: null }
     } catch (error) {
+      console.error('Error updating avatar:', error)
       setError(error.message)
       return { data: null, error: error.message }
     }
@@ -160,6 +209,7 @@ export function AuthProvider({ children }) {
     signIn,
     signOut,
     updateProfile,
+    updateAvatar,
     isAuthenticated: !!user
   }
 

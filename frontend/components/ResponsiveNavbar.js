@@ -5,8 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { 
   ArrowLeft, Menu, X, Settings, User, Bell, BarChart3, 
-  Globe, Star, Plus, Search, Wifi, WifiOff
+  Globe, Star, Plus, Search, Wifi, WifiOff, LogOut, Crown
 } from "lucide-react";
+import { useAuth } from "../lib/AuthContext";
+import AuthModal from "./AuthModal";
+import UserAccountDropdown from "./UserAccountDropdown";
 
 export default function ResponsiveNavbar({ 
   title = "CryptoAlarm",
@@ -18,6 +21,8 @@ export default function ResponsiveNavbar({
   isConnected = true
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const { user, profile, signOut, isAuthenticated, loading } = useAuth();
 
   // Close mobile menu on window resize or outside click
   useEffect(() => {
@@ -146,16 +151,22 @@ export default function ResponsiveNavbar({
 
               {/* Desktop Action Buttons */}
               <div className="hidden md:flex items-center space-x-2">
-                <Link href="/dashboard/settings">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="/dashboard/profile">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                {loading ? (
+                  <div className="w-8 h-8 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                  </div>
+                ) : isAuthenticated ? (
+                  <UserAccountDropdown />
+                ) : (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => setAuthModalOpen(true)}
+                  >
                     <User className="h-4 w-4" />
                   </Button>
-                </Link>
+                )}
               </div>
 
               {/* Mobile Menu Button */}
@@ -221,7 +232,7 @@ export default function ResponsiveNavbar({
                     Dashboard
                   </Button>
                 </Link>
-                <Link href="/dashboard/portfolio" onClick={() => setMobileMenuOpen(false)}>
+                <Link href="/portfolio" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
                     <Globe className="h-4 w-4 mr-3" />
                     Portfolio
@@ -246,18 +257,55 @@ export default function ResponsiveNavbar({
                 )}
                 
                 <div className="border-t border-gray-800/50 pt-2 mt-2">
-                  <Link href="/dashboard/settings" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
-                      <Settings className="h-4 w-4 mr-3" />
-                      Settings
-                    </Button>
-                  </Link>
-                  <Link href="/dashboard/profile" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
+                  {loading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                    </div>
+                  ) : isAuthenticated ? (
+                    <>
+                      <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
+                          <User className="h-4 w-4 mr-3" />
+                          My Profile
+                        </Button>
+                      </Link>
+                      <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
+                          <Bell className="h-4 w-4 mr-3" />
+                          My Alerts
+                        </Button>
+                      </Link>
+                      <Link href="/premium" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start text-[#16C784] hover:text-[#14B575] hover:bg-[#16C784]/10">
+                          <Crown className="h-4 w-4 mr-3" />
+                          Premium Plan
+                        </Button>
+                      </Link>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        onClick={() => {
+                          signOut();
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        <LogOut className="h-4 w-4 mr-3" />
+                        Sign Out
+                      </Button>
+                    </>
+                  ) : (
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-muted-foreground hover:text-foreground"
+                      onClick={() => {
+                        setAuthModalOpen(true);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
                       <User className="h-4 w-4 mr-3" />
-                      Profile
+                      Sign In
                     </Button>
-                  </Link>
+                  )}
                 </div>
                 
                 {/* Mobile Connection Status */}
@@ -281,6 +329,12 @@ export default function ResponsiveNavbar({
           </div>
         )}
       </nav>
+
+      {/* Authentication Modal */}
+      <AuthModal 
+        isOpen={authModalOpen} 
+        onClose={() => setAuthModalOpen(false)} 
+      />
     </>
   );
 }

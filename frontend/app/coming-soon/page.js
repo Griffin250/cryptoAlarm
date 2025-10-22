@@ -270,11 +270,7 @@ export default function ComingSoonPage() {
           {upcomingFeatures.map((feature, index) => (
             <Card 
               key={feature.id}
-              className={`group relative overflow-hidden bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-500 cursor-pointer animate-in slide-in-from-bottom-4 delay-${index * 100 + 500} ${
-                activeFeature === index ? 'ring-2 ring-purple-500/50 scale-105' : ''
-              }`}
-              onClick={() => setActiveFeature(index)}
-              onMouseEnter={() => setActiveFeature(index)}
+              className={`group relative overflow-hidden bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-500 cursor-pointer animate-in slide-in-from-bottom-4 delay-${index * 100 + 500}`}
             >
               {/* Background Pattern */}
               <div className="absolute top-4 right-4 text-6xl opacity-5 group-hover:opacity-10 transition-opacity duration-300">
@@ -282,7 +278,7 @@ export default function ComingSoonPage() {
               </div>
 
               <CardHeader className="pb-4">
-                <div className="flex items-start justify-between mb-4">
+                <div className={`flex items-start justify-between mb-4`}>
                   <div className={`p-3 rounded-xl bg-gradient-to-br ${feature.gradient} shadow-lg group-hover:scale-110 transition-transform duration-300 animate-float`} style={{animationDelay: `${index * 0.5}s`}}>
                     {renderIcon(feature.iconName, "w-8 h-8")}
                   </div>
@@ -297,46 +293,42 @@ export default function ComingSoonPage() {
                   {feature.tagline}
                 </CardDescription>
               </CardHeader>
-
               <CardContent className="space-y-6">
                 <p className="text-gray-300 leading-relaxed">
                   {feature.description}
                 </p>
-
-                {activeFeature === index && (
-                  <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-500">
-                    <div>
-                      <h4 className="text-lg font-semibold text-white mb-3 flex items-center">
-                        <Target className="w-5 h-5 mr-2 text-purple-400" />
-                        How It Works
-                      </h4>
-                      <p className="text-gray-300 leading-relaxed">
-                        {feature.howItWorks}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h4 className="text-lg font-semibold text-white mb-3 flex items-center">
-                        <Star className="w-5 h-5 mr-2 text-yellow-400" />
-                        Key Benefits
-                      </h4>
-                      <ul className="space-y-2">
-                        {feature.benefits.map((benefit, i) => (
-                          <li key={i} className="flex items-center text-gray-300">
-                            <ChevronRight className="w-4 h-4 mr-2 text-green-400" />
-                            {benefit}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="text-lg font-semibold text-white mb-3">
-                        {feature.longDescription}
-                      </h4>
-                    </div>
+                <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-500">
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-3 flex items-center">
+                      <Target className="w-5 h-5 mr-2 text-purple-400" />
+                      How It Works
+                    </h4>
+                    <p className="text-gray-300 leading-relaxed">
+                      {feature.howItWorks}
+                    </p>
                   </div>
-                )}
+
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-3 flex items-center">
+                      <Star className="w-5 h-5 mr-2 text-yellow-400" />
+                      Key Benefits
+                    </h4>
+                    <ul className="space-y-2">
+                      {feature.benefits.map((benefit, i) => (
+                        <li key={i} className="flex items-center text-gray-300">
+                          <ChevronRight className="w-4 h-4 mr-2 text-green-400" />
+                          {benefit}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-3">
+                      {feature.longDescription}
+                    </h4>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -352,7 +344,6 @@ export default function ComingSoonPage() {
               Join our exclusive waitlist to get early access to these revolutionary features. 
               Be part of the next generation of crypto trading and analysis tools.
             </p>
-            
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
                 size="lg" 
@@ -362,7 +353,6 @@ export default function ComingSoonPage() {
                 Join Waitlist
                 <Sparkles className="w-4 h-4 ml-2 group-hover:animate-spin" />
               </Button>
-              
               <Link href="/dashboard">
                 <Button 
                   variant="outline" 
@@ -374,7 +364,6 @@ export default function ComingSoonPage() {
                 </Button>
               </Link>
             </div>
-
             <div className="flex items-center justify-center mt-8 text-sm text-gray-400">
               <Shield className="w-4 h-4 mr-2" />
               No spam, unsubscribe anytime. Your data is secure.

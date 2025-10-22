@@ -11,6 +11,8 @@ from twilio.rest import Client
 
 from dotenv import load_dotenv
 load_dotenv()
+import os
+import requests
 
 app = FastAPI(title="CryptoAlarm API", description="Real-time cryptocurrency price monitoring with voice alerts")
 
@@ -26,12 +28,15 @@ app.add_middleware(
 # Shared dictionary for latest prices
 latest_prices = {}
 
-# Binance WebSocket stream - Extended crypto list
+
+# Binance WebSocket stream - Extended coin list (20 coins)
 BINANCE_STREAM_URL = (
     "wss://stream.binance.com:9443/stream?"
-    "streams=btcusdt@trade/ethusdt@trade/solusdt@trade/xrpusdt@trade/"
-    "pepeusdt@trade/bnbusdt@trade/usdcusdt@trade/dogeusdt@trade/"
-    "suiusdt@trade/shibusdt@trade/adausdt@trade"
+    "streams="
+    "btcusdt@trade/ethusdt@trade/bnbusdt@trade/solusdt@trade/xrpusdt@trade/"
+    "dogeusdt@trade/adausdt@trade/shibusdt@trade/usdcusdt@trade/suiusdt@trade/pepeusdt@trade/"
+    "trxusdt@trade/linkusdt@trade/ltcusdt@trade/maticusdt@trade/bchusdt@trade/dotusdt@trade/"
+    "avaxusdt@trade/uniusdt@trade/xlmusdt@trade"
 )
 
 async def listen_to_binance():
@@ -65,6 +70,31 @@ async def startup_event():
 def get_prices():
     """Return the latest tracked prices."""
     return {"prices": latest_prices}
+
+# Global Market Metrics Endpoint
+@app.get("/global-metrics")
+def get_global_metrics():
+    """Fetch global crypto market metrics from CoinMarketCap API."""
+    api_key = os.getenv("COIN_MARKET_CAP_API_KEY")
+    url = "https://pro-api.coinmarketcap.com/v1/global-metrics/quotes/latest"
+    headers = {"X-CMC_PRO_API_KEY": api_key}
+    params = {"convert": "USD"}
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        data = response.json()["data"]
+        result = {
+            "btc_dominance": data.get("btc_dominance"),
+            "eth_dominance": data.get("eth_dominance"),
+            "active_cryptocurrencies": data.get("active_cryptocurrencies"),
+            "active_exchanges": data.get("active_exchanges"),
+            "totalmarketcap": data.get("quote", {}).get("USD", {}).get("total_market_cap", data.get("totalmarketcap")),
+            "totalvolume24h": data.get("quote", {}).get("USD", {}).get("total_volume_24h", data.get("totalvolume24h")),
+            "last_updated": data.get("last_updated"),
+        }
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching global metrics: {str(e)}")
 
 # Alert Management Endpoints
 

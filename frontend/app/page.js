@@ -492,8 +492,15 @@ const Home = () => {
                   <React.Fragment key={setIndex}>
                     {supportedCryptos.map((crypto, index) => (
                       <div key={`${setIndex}-${index}`} className="flex items-center space-x-4 bg-gray-800/30 border border-gray-700 rounded-xl px-6 py-4 backdrop-blur-sm hover:bg-gray-800/50 transition-all duration-300 flex-shrink-0">
-                        <div className="text-2xl" style={{ color: crypto.color }}>
-                          {crypto.icon}
+                        <div className="text-2xl flex items-center justify-center" style={{ color: crypto.color, width: '2.5rem', height: '2.5rem' }}>
+                          <Image
+                            src={`/cryptoIcons/${crypto.symbol}.png`}
+                            alt={crypto.name}
+                            width={32}
+                            height={32}
+                            className="object-contain rounded-full bg-white"
+                            onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentNode.innerHTML += crypto.icon; }}
+                          />
                         </div>
                         <div>
                           <div className="text-white font-semibold text-lg">{crypto.symbol}</div>
@@ -518,8 +525,15 @@ const Home = () => {
                   <React.Fragment key={setIndex}>
                     {supportedCryptos.slice().reverse().map((crypto, index) => (
                       <div key={`${setIndex}-${index}`} className="flex items-center space-x-4 bg-gray-800/30 border border-gray-700 rounded-xl px-6 py-4 backdrop-blur-sm hover:bg-gray-800/50 transition-all duration-300 flex-shrink-0">
-                        <div className="text-2xl" style={{ color: crypto.color }}>
-                          {crypto.icon}
+                        <div className="text-2xl flex items-center justify-center" style={{ color: crypto.color, width: '2.5rem', height: '2.5rem' }}>
+                          <Image
+                            src={`/cryptoIcons/${crypto.symbol}.png`}
+                            alt={crypto.name}
+                            width={32}
+                            height={32}
+                            className="object-contain rounded-full bg-white"
+                            onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentNode.innerHTML += crypto.icon; }}
+                          />
                         </div>
                         <div>
                           <div className="text-white font-semibold text-lg">{crypto.symbol}</div>
@@ -750,7 +764,7 @@ const Home = () => {
                 <Link href="/dashboard" className="block text-gray-400 hover:text-white transition-colors">
                   Dashboard
                 </Link>
-                <Link href="/dashboard" className="block text-gray-400 hover:text-white transition-colors">
+                <Link href="/alerts" className="block text-gray-400 hover:text-white transition-colors">
                   Set Alerts
                 </Link>
                 <Link href="/coming-soon" className="block text-purple-400 hover:text-purple-300 transition-colors font-medium">
