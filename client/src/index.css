@@ -2,14 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Optional: Custom component styles using @apply */
-@layer components {
-  .btn-primary {
-    @apply bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200;
+@layer base {
+  :root {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+    --radius: 0.75rem;
   }
-  
-  .card {
-    @apply bg-white rounded-xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition-shadow duration-300;
+}
+
+@layer base {
+  * {
+    @apply border-border;
   }
+  body {
+    @apply bg-background text-foreground;
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+  }
+}
+
+/* CryptoAlarm Custom Styles */
+.gradient-bg {
+  background: linear-gradient(135deg, #0B1426 0%, #0F1837 50%, #1A1B3A 100%);
+}
+
+.crypto-card {
+  @apply bg-gray-900/50 border-gray-700 backdrop-blur-lg;
+}
+
+.price-up {
+  @apply text-[#16C784];
+}
+
+.price-down {
+  @apply text-[#EA3943];
+}
+
+/* Animation classes */
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce 2s infinite;
+}
+
+/* Toast customization */
+.sonner-toast {
+  @apply bg-card text-card-foreground border-border;
+}
+
+/* Scrollbar customization */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
 }
 
