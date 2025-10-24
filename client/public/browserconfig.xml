@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<browserconfig>
+    <msapplication>
+        <tile>
+            <square70x70logo src="/cryptoAlarmLogo.png"/>
+            <square150x150logo src="/cryptoAlarmLogo.png"/>
+            <square310x310logo src="/cryptoAlarmLogo.png"/>
+            <TileColor>#3861FB</TileColor>
+        </tile>
+    </msapplication>
+</browserconfig>
