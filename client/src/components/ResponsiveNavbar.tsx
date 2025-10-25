@@ -3,7 +3,7 @@ import { Button } from './ui/button'
 import { Link, useNavigate } from 'react-router-dom'
 import { 
   ArrowLeft, Menu, X, User, Bell, BarChart3, 
-  Wifi, WifiOff, LogOut
+  Wifi, WifiOff, LogOut, CreditCard
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from './AuthModal'
@@ -229,6 +229,18 @@ const ResponsiveNavbar: React.FC<ResponsiveNavbarProps> = ({
                   >
                     <BarChart3 className="h-4 w-4 mr-3" />
                     Portfolio
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      navigate('/virtual-card')
+                      setMobileMenuOpen(false)
+                    }}
+                    className="w-full justify-start text-gray-400 hover:text-white hover:bg-gray-800"
+                  >
+                    <CreditCard className="h-4 w-4 mr-3" />
+                    Virtual Card
                   </Button>
                   
                   <Button

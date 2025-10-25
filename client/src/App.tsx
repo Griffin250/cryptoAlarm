@@ -15,6 +15,7 @@ import Privacy from './pages/Privacy.tsx';
 import Disclaimer from './pages/Disclaimer.tsx';
 import Contact from './pages/Contact.tsx';
 import NotFound from './pages/NotFound.tsx';
+import CryptoDetail from './pages/CryptoDetail.tsx';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="/alerts" element={<Alerts />} />
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/crypto/:symbol" element={<CryptoDetail />} />
             <Route path="/coming-soon" element={<ComingSoon />} />
             <Route path="/premium" element={<Premium />} />
             <Route path="/terms" element={<Terms />} />

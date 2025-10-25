@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 
@@ -33,11 +34,10 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { AuthProvider } from "../context/AuthContext";
 // import AlertManager from "../components/AlertManager";
-import { Link } from "react-router-dom";
 import { 
   Phone, Wifi, WifiOff, Star, 
   Settings, Bell, User, Search, Menu, BarChart3, 
-  Globe, ArrowLeft, RefreshCw
+  Globe, ArrowLeft, RefreshCw, CreditCard
 } from "lucide-react";
 
 // Crypto info mapping - Extended list
@@ -56,7 +56,7 @@ const cryptoInfo: Record<string, {name: string; symbol: string; icon: string; ra
   TRXUSDT: { name: "TRON", symbol: "TRX", icon: "🚀", rank: 12 },
   LINKUSDT: { name: "Chainlink", symbol: "LINK", icon: "🔗", rank: 13 },
   LTCUSDT: { name: "Litecoin", symbol: "LTC", icon: "Ł", rank: 14 },
-  MATICUSDT: { name: "Polygon", symbol: "MATIC", icon: "🟪", rank: 15 },
+  POLYUSDT: { name: "Polygon", symbol: "POL", icon: "🟪", rank: 15 },
   BCHUSDT: { name: "Bitcoin Cash", symbol: "BCH", icon: "Ƀ", rank: 16 },
   DOTUSDT: { name: "Polkadot", symbol: "DOT", icon: "●", rank: 17 },
   AVAXUSDT: { name: "Avalanche", symbol: "AVAX", icon: "🗻", rank: 18 },
@@ -103,9 +103,10 @@ export default function Dashboard() {
   const intervalRef = useRef<number | null>(null);
 
   // Pagination state
-  const [currentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const coinsPerPage = 10;
   const coinSymbols = Object.keys(cryptoInfo);
+  const totalPages = Math.ceil(coinSymbols.length / coinsPerPage);
   const paginatedSymbols = coinSymbols.slice((currentPage - 1) * coinsPerPage, currentPage * coinsPerPage);
 
   // Fetch global metrics from backend
@@ -344,6 +345,12 @@ export default function Dashboard() {
                     <span className="hidden xl:inline">Portfolio</span>
                   </Button>
                 </Link>
+                <Link to="/virtual-card">
+                  <Button variant="ghost" size="sm" className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 px-2 xl:px-3">
+                    <CreditCard className="h-4 w-4 xl:mr-2" />
+                    <span className="hidden xl:inline">Virtual Card</span>
+                  </Button>
+                </Link>
                 <Link to="/premium">
                   <Button variant="ghost" size="sm" className="text-[#16C784] hover:text-[#14B575] hover:bg-[#16C784]/10 px-2 xl:px-3">
                     <Star className="h-4 w-4 xl:mr-2" />
@@ -508,6 +515,12 @@ export default function Dashboard() {
                   <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
                     <Globe className="h-4 w-4 mr-3" />
                     Portfolio
+                  </Button>
+                </Link>
+                <Link to="/virtual-card" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start text-purple-400 hover:text-purple-300 hover:bg-purple-500/10">
+                    <CreditCard className="h-4 w-4 mr-3" />
+                    Virtual Card
                   </Button>
                 </Link>
                 <Link to="/premium" onClick={() => setMobileMenuOpen(false)}>
@@ -792,7 +805,12 @@ export default function Dashboard() {
                                 <span className="w-7 h-7 flex items-center justify-center">
                                   {iconElement}
                                 </span>
-                                <span className="font-semibold text-foreground">{info.name}</span>
+                                <Link 
+                                  to={`/crypto/${info.symbol}`}
+                                  className="font-semibold text-foreground hover:text-blue-500 transition-colors cursor-pointer"
+                                >
+                                  {info.name}
+                                </Link>
                                 <span className="text-muted-foreground text-xs">{info.symbol}</span>
                               </td>
                               <td className={`px-2 py-2 font-bold transition-colors duration-300 ${
@@ -844,6 +862,51 @@ export default function Dashboard() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Pagination Controls */}
+                {coinSymbols.length > coinsPerPage && (
+                  <div className="flex items-center justify-between mt-6 px-4 py-3 border-t border-gray-700">
+                    <div className="flex items-center space-x-2 text-sm text-gray-400">
+                      <span>Showing {((currentPage - 1) * coinsPerPage) + 1} to {Math.min(currentPage * coinsPerPage, coinSymbols.length)} of {coinSymbols.length} cryptocurrencies</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                      >
+                        Previous
+                      </Button>
+                      <div className="flex items-center space-x-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className={currentPage === page 
+                              ? "bg-blue-600 text-white hover:bg-blue-700" 
+                              : "border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+                            }
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 {Object.keys(prices).length === 0 && (
                   <div className="text-center py-12 text-muted-foreground">

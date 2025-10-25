@@ -470,20 +470,33 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Supported Cryptos - Animated Marquee */}
-      <section className="py-20 overflow-hidden">
-        <div className="container mx-auto px-4">
+      {/* Supported Cryptos - Enhanced Animated Marquee */}
+      <section className="py-20 overflow-hidden relative">
+        {/* Animated background particles */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-10 left-10 w-2 h-2 bg-blue-400 rounded-full animate-ping"></div>
+          <div className="absolute top-20 right-20 w-1 h-1 bg-yellow-300 rounded-full animate-pulse"></div>
+          <div className="absolute bottom-10 left-1/3 w-1 h-1 bg-green-400 rounded-full animate-bounce"></div>
+          <div className="absolute top-1/2 right-10 w-2 h-2 bg-purple-400 rounded-full animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">
+            <h2 className="text-4xl font-bold text-white mb-4 animate-float">
               Supported Cryptocurrencies
             </h2>
             <p className="text-xl text-gray-300">
               Monitor price movements across 11+ major cryptocurrencies
             </p>
+            <div className="mt-4 w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full animate-glow"></div>
           </div>
 
-          {/* Marquee Container */}
-          <div className="marquee-container space-y-8">
+          {/* Enhanced Marquee Container */}
+          <div className="marquee-container space-y-8 relative">
+            {/* Gradient overlays for smooth edges */}
+            <div className="absolute left-0 top-0 w-32 h-full bg-gradient-to-r from-gray-900 via-gray-900/50 to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-gray-900 via-gray-900/50 to-transparent z-10 pointer-events-none"></div>
+
             {/* First Row - Moving Left */}
             <div className="relative overflow-hidden">
               <div className="marquee-left flex items-center space-x-8 whitespace-nowrap">
@@ -491,14 +504,21 @@ const Home: React.FC = () => {
                 {[...Array(3)].map((_, setIndex) => (
                   <React.Fragment key={setIndex}>
                     {supportedCryptos.map((crypto, index) => (
-                      <div key={`${setIndex}-${index}`} className="flex items-center space-x-4 bg-gray-800/30 border border-gray-700 rounded-xl px-6 py-4 backdrop-blur-sm hover:bg-gray-800/50 transition-all duration-300 flex-shrink-0">
-                        <div className="text-2xl flex items-center justify-center" style={{ color: crypto.color, width: '2.5rem', height: '2.5rem' }}>
+                      <Link 
+                        key={`${setIndex}-${index}`}
+                        to={`/crypto/${crypto.symbol}`}
+                        className="flex items-center space-x-4 bg-gray-800/40 border border-gray-700/50 rounded-xl px-6 py-4 backdrop-blur-sm hover:bg-gray-800/70 hover:border-gray-600 hover:scale-105 transition-all duration-300 flex-shrink-0 group cursor-pointer shadow-lg hover:shadow-2xl"
+                        style={{
+                          boxShadow: `0 4px 15px rgba(${crypto.color === '#F7931A' ? '247, 147, 26' : crypto.color === '#627EEA' ? '98, 126, 234' : '56, 97, 251'}, 0.1)`
+                        }}
+                      >
+                        <div className="text-2xl flex items-center justify-center group-hover:animate-pulse" style={{ color: crypto.color, width: '2.5rem', height: '2.5rem' }}>
                           <img
                             src={`/cryptoIcons/${crypto.symbol}.png`}
                             alt={crypto.name}
                             width={32}
                             height={32}
-                            className="object-contain rounded-full bg-white"
+                            className="object-contain rounded-full bg-white/10 p-1 group-hover:bg-white/20 transition-all duration-300"
                             onError={(e) => { 
                               const target = e.target as HTMLImageElement;
                               target.onerror = null; 
@@ -510,14 +530,16 @@ const Home: React.FC = () => {
                           />
                         </div>
                         <div>
-                          <div className="text-white font-semibold text-lg">{crypto.symbol}</div>
-                          <div className="text-gray-400 text-sm">{crypto.name}</div>
+                          <div className="text-white font-semibold text-lg group-hover:text-blue-300 transition-colors">{crypto.symbol}</div>
+                          <div className="text-gray-400 text-sm group-hover:text-gray-300 transition-colors">{crypto.name}</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-green-400 font-semibold">+{(2 + Math.random() * 8).toFixed(2)}%</div>
+                          <div className="text-green-400 font-semibold group-hover:text-green-300 transition-colors">
+                            +{(2 + Math.random() * 8).toFixed(2)}%
+                          </div>
                           <div className="text-gray-400 text-xs">24h</div>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </React.Fragment>
                 ))}
@@ -531,14 +553,21 @@ const Home: React.FC = () => {
                 {[...Array(3)].map((_, setIndex) => (
                   <React.Fragment key={setIndex}>
                     {supportedCryptos.slice().reverse().map((crypto, index) => (
-                      <div key={`${setIndex}-${index}`} className="flex items-center space-x-4 bg-gray-800/30 border border-gray-700 rounded-xl px-6 py-4 backdrop-blur-sm hover:bg-gray-800/50 transition-all duration-300 flex-shrink-0">
-                        <div className="text-2xl flex items-center justify-center" style={{ color: crypto.color, width: '2.5rem', height: '2.5rem' }}>
+                      <Link 
+                        key={`${setIndex}-${index}`}
+                        to={`/crypto/${crypto.symbol}`}
+                        className="flex items-center space-x-4 bg-gray-800/40 border border-gray-700/50 rounded-xl px-6 py-4 backdrop-blur-sm hover:bg-gray-800/70 hover:border-gray-600 hover:scale-105 transition-all duration-300 flex-shrink-0 group cursor-pointer shadow-lg hover:shadow-2xl"
+                        style={{
+                          boxShadow: `0 4px 15px rgba(${crypto.color === '#F7931A' ? '247, 147, 26' : crypto.color === '#627EEA' ? '98, 126, 234' : '56, 97, 251'}, 0.1)`
+                        }}
+                      >
+                        <div className="text-2xl flex items-center justify-center group-hover:animate-pulse" style={{ color: crypto.color, width: '2.5rem', height: '2.5rem' }}>
                           <img
                             src={`/cryptoIcons/${crypto.symbol}.png`}
                             alt={crypto.name}
                             width={32}
                             height={32}
-                            className="object-contain rounded-full bg-white"
+                            className="object-contain rounded-full bg-white/10 p-1 group-hover:bg-white/20 transition-all duration-300"
                             onError={(e) => { 
                               const target = e.target as HTMLImageElement;
                               target.onerror = null; 
@@ -550,14 +579,16 @@ const Home: React.FC = () => {
                           />
                         </div>
                         <div>
-                          <div className="text-white font-semibold text-lg">{crypto.symbol}</div>
-                          <div className="text-gray-400 text-sm">{crypto.name}</div>
+                          <div className="text-white font-semibold text-lg group-hover:text-blue-300 transition-colors">{crypto.symbol}</div>
+                          <div className="text-gray-400 text-sm group-hover:text-gray-300 transition-colors">{crypto.name}</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-red-400 font-semibold">-{(0.5 + Math.random() * 4).toFixed(2)}%</div>
+                          <div className="text-red-400 font-semibold group-hover:text-red-300 transition-colors">
+                            -{(0.5 + Math.random() * 4).toFixed(2)}%
+                          </div>
                           <div className="text-gray-400 text-xs">24h</div>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </React.Fragment>
                 ))}
@@ -566,9 +597,19 @@ const Home: React.FC = () => {
           </div>
           
           <div className="text-center mt-8">
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 text-sm animate-pulse">
               💡 Hover over the scrolling rows to pause the animation
             </p>
+            <div className="mt-2 flex items-center justify-center space-x-4 text-xs text-gray-500">
+              <span className="flex items-center">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-1"></div>
+                Live Data
+              </span>
+              <span className="flex items-center">
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-ping mr-1"></div>
+                Real-time Updates
+              </span>
+            </div>
           </div>
         </div>
       </section>
@@ -784,7 +825,7 @@ const Home: React.FC = () => {
                   Set Alerts
                 </Link>
                 <Link to="/coming-soon" className="block text-purple-400 hover:text-purple-300 transition-colors font-medium">
-                  Coming Soon Features
+                  Coming Soon
                 </Link>
                 <Link to="#features" className="block text-gray-400 hover:text-white transition-colors">
                   Features
