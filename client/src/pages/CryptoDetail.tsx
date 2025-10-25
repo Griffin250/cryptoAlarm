@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
@@ -74,7 +74,7 @@ const cryptoInfo: Record<string, {name: string; symbol: string; icon: string; ra
 import { 
   ArrowLeft, TrendingUp, TrendingDown, Users, Heart, MessageCircle, 
   Share, BarChart3, Bell, Target, Clock, ArrowUp, Zap, 
-  ExternalLink, Bookmark, RefreshCw, ArrowRight, Menu, X
+  ExternalLink, Bookmark, RefreshCw, ArrowRight, Menu, X, Maximize2, Minimize2
 } from 'lucide-react'
 
 interface CryptoData {
@@ -116,16 +116,16 @@ const CryptoDetail: React.FC = () => {
   const navigate = useNavigate()
   const [timeframe, setTimeframe] = useState('24h')
   const [isFollowing, setIsFollowing] = useState(false)
-  const [livePrice, setLivePrice] = useState<number | null>(null)
-  const [priceChange24h, setPriceChange24h] = useState<number | null>(null)
+
   const [isLoading, setIsLoading] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [chartType, setChartType] = useState<'line' | 'candlestick'>('line')
+  const [isChartMaximized, setIsChartMaximized] = useState(false)
 
   // Get crypto info based on symbol with better error handling
   const currentSymbol = symbol?.toUpperCase() || 'BTC'
   const info = cryptoInfo[currentSymbol]
-  const isUnsupportedSymbol = !info && currentSymbol !== 'BTC'
+
   
   // Use BTC as fallback only if no symbol was provided, otherwise show error
   const displayInfo = info || cryptoInfo.BTC
@@ -221,9 +221,6 @@ const CryptoDetail: React.FC = () => {
         const change24h = parseFloat(data.priceChangePercent)
         const volume24h = parseFloat(data.volume) * price // Volume in USD
         
-        setLivePrice(price)
-        setPriceChange24h(change24h)
-        
         // Update crypto data with live values
         setCryptoData(prev => ({
           ...prev,
@@ -299,9 +296,6 @@ const CryptoDetail: React.FC = () => {
         const newPrice = parseFloat(data.c)
         const newChange24h = parseFloat(data.P)
         
-        setLivePrice(newPrice)
-        setPriceChange24h(newChange24h)
-        
         setCryptoData(prev => {
           const newPriceHistory = [...prev.priceHistory, newPrice].slice(-50)
           
@@ -346,6 +340,28 @@ const CryptoDetail: React.FC = () => {
       ws.close()
     }
   }, [currentSymbol, displayInfo.binanceSymbol])
+
+  // Keyboard shortcuts for chart modal
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isChartMaximized) {
+        setIsChartMaximized(false)
+      }
+    }
+
+    if (isChartMaximized) {
+      document.addEventListener('keydown', handleKeyDown)
+      // Prevent background scrolling when modal is open
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'unset'
+    }
+  }, [isChartMaximized])
 
   const formatNumber = (num: number): string => {
     if (num >= 1e12) return `$${(num / 1e12).toFixed(2)}T`
@@ -626,10 +642,19 @@ const CryptoDetail: React.FC = () => {
                         </div>
                       </div>
                       
+                      {/* Maximize Chart Button */}
+                      <button
+                        onClick={() => setIsChartMaximized(true)}
+                        className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-gray-900/80 hover:bg-gray-800/90 rounded-lg p-2 transition-all duration-200 hover:scale-105 z-10"
+                        title="Maximize Chart"
+                      >
+                        <Maximize2 className="h-4 w-4 text-gray-300 hover:text-white" />
+                      </button>
+                      
                       {/* Price markers */}
                       {((chartType === 'line' && cryptoData.priceHistory.length > 0) || 
                         (chartType === 'candlestick' && cryptoData.candlestickData.length > 0)) && (
-                        <div className="absolute top-2 sm:top-4 right-2 sm:right-4 text-xs text-gray-400 space-y-1 hidden sm:block">
+                        <div className="absolute top-2 sm:top-4 right-12 sm:right-16 text-xs text-gray-400 space-y-1 hidden sm:block">
                           {chartType === 'line' ? (
                             <>
                               <div>H: ${Math.max(...cryptoData.priceHistory).toLocaleString()}</div>
@@ -916,6 +941,149 @@ const CryptoDetail: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Maximized Chart Modal */}
+      {isChartMaximized && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop with blur effect */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-md"
+            onClick={() => setIsChartMaximized(false)}
+          ></div>
+          
+          {/* Modal Content */}
+          <div className="relative bg-gray-900/95 border border-gray-700 rounded-xl shadow-2xl w-[95vw] h-[90vh] max-w-7xl p-3 sm:p-6 overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
+                <div className="flex items-center space-x-2">
+                  {CRYPTO_ICONS[currentSymbol] ? (
+                    <img 
+                      src={CRYPTO_ICONS[currentSymbol]} 
+                      alt={currentSymbol} 
+                      width={32}
+                      height={32}
+                      className="rounded-full object-cover" 
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">{displayInfo.icon}</span>
+                    </div>
+                  )}
+                  <div>
+                    <h2 className="text-xl font-bold text-white">{displayInfo.name} Chart</h2>
+                    <p className="text-sm text-gray-400">{currentSymbol} • {timeframe}</p>
+                  </div>
+                </div>
+                
+                {/* Chart Type Toggle */}
+                <div className="flex items-center space-x-1 sm:space-x-2 bg-gray-800 rounded-lg p-1">
+                  <button
+                    onClick={() => setChartType('line')}
+                    className={`px-3 py-1 rounded text-sm transition-all ${
+                      chartType === 'line'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Line
+                  </button>
+                  <button
+                    onClick={() => setChartType('candlestick')}
+                    className={`px-3 py-1 rounded text-sm transition-all ${
+                      chartType === 'candlestick'
+                        ? 'bg-orange-600 text-white'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Candles
+                  </button>
+                </div>
+              </div>
+              
+              {/* Close Button */}
+              <button
+                onClick={() => setIsChartMaximized(false)}
+                className="bg-gray-800/80 hover:bg-gray-700/90 rounded-lg p-2 transition-all duration-200 hover:scale-105"
+                title="Minimize Chart"
+              >
+                <Minimize2 className="h-5 w-5 text-gray-300 hover:text-white" />
+              </button>
+            </div>
+            
+            {/* Maximized Chart */}
+            <div className="h-[calc(100%-5rem)] bg-gray-800/30 rounded-lg border border-gray-700 p-4 relative">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                    <p className="text-gray-400 text-lg">Loading live chart data...</p>
+                  </div>
+                </div>
+              ) : (chartType === 'line' ? cryptoData.priceHistory.length > 1 : cryptoData.candlestickData.length > 1) ? (
+                <PriceChart 
+                  data={chartType === 'line' ? cryptoData.priceHistory : cryptoData.candlestickData}
+                  height={Math.min(window.innerHeight * 0.7, 600)}
+                  color={cryptoData.change24h >= 0 ? '#10B981' : '#EF4444'}
+                  showGradient={chartType === 'line'}
+                  chartType={chartType}
+                  animateEntry={true}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <BarChart3 className="h-16 w-16 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg">Building price history...</p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Enhanced Chart Info Overlay */}
+              {!isLoading && (
+                <div className="absolute top-4 left-4 bg-gray-900/90 rounded-lg p-4 min-w-[200px]">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="text-sm text-gray-400">Live Price</div>
+                    <div className={`text-sm px-2 py-1 rounded ${
+                      chartType === 'line' 
+                        ? 'bg-blue-600/20 text-blue-400' 
+                        : 'bg-orange-600/20 text-orange-400'
+                    }`}>
+                      {chartType === 'line' ? 'Line Chart' : 'Candlestick'}
+                    </div>
+                  </div>
+                  <div className="text-2xl font-bold text-white mb-1">
+                    ${cryptoData.price.toLocaleString(undefined, { 
+                      minimumFractionDigits: cryptoData.price < 1 ? 6 : 2, 
+                      maximumFractionDigits: cryptoData.price < 1 ? 8 : 2 
+                    })}
+                  </div>
+                  <div className={`text-lg ${cryptoData.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {cryptoData.change24h >= 0 ? '+' : ''}{cryptoData.change24h.toFixed(2)}% (24h)
+                  </div>
+                  
+                  {/* Additional Stats */}
+                  {((chartType === 'line' && cryptoData.priceHistory.length > 0) || 
+                    (chartType === 'candlestick' && cryptoData.candlestickData.length > 0)) && (
+                    <div className="mt-3 pt-3 border-t border-gray-700 text-sm text-gray-400 space-y-1">
+                      {chartType === 'line' ? (
+                        <>
+                          <div>24h High: ${Math.max(...cryptoData.priceHistory).toLocaleString()}</div>
+                          <div>24h Low: ${Math.min(...cryptoData.priceHistory).toLocaleString()}</div>
+                        </>
+                      ) : (
+                        <>
+                          <div>24h High: ${Math.max(...cryptoData.candlestickData.map(c => c.high)).toLocaleString()}</div>
+                          <div>24h Low: ${Math.min(...cryptoData.candlestickData.map(c => c.low)).toLocaleString()}</div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

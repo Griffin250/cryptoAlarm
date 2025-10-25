@@ -213,10 +213,10 @@ export class AlertService {
 
       const stats: AlertStats = {
         total_alerts: alerts?.length || 0,
-        active_alerts: alerts?.filter(a => a.is_active).length || 0,
-        triggered_alerts: alerts?.filter(a => a.is_triggered).length || 0,
+        active_alerts: alerts?.filter((a: any) => a.is_active).length || 0,
+        triggered_alerts: alerts?.filter((a: any) => a.is_triggered).length || 0,
         success_rate: alerts?.length ? 
-          (alerts.filter(a => a.is_triggered).length / alerts.length) * 100 : 0
+          (alerts.filter((a: any) => a.is_triggered).length / alerts.length) * 100 : 0
       };
 
       return { data: stats, error: null };

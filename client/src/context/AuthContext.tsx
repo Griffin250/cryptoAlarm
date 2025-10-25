@@ -42,7 +42,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (user) {
           // Get user profile
           const { data: profile, error: profileError } = await AlertService.getUserProfile();
-          if (!profileError) {
+          if (!profileError && profile) {
             setProfile(profile);
           }
         }
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (session?.user) {
           // Get user profile
           const { data: profile, error: profileError } = await AlertService.getUserProfile();
-          if (!profileError) {
+          if (!profileError && profile) {
             setProfile(profile);
           }
         } else {
@@ -149,7 +149,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
       
       console.log('Profile updated successfully:', data);
-      setProfile(data);
+      if (data) {
+        setProfile(data);
+      }
       return { error: null };
     } catch (error: any) {
       console.error('Error in updateProfile:', error);

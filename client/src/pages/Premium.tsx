@@ -6,14 +6,10 @@ import { Link } from 'react-router-dom'
 import { 
   Crown, CheckCircle, X, Shield, Star, 
   Bell, BarChart3, Phone, Globe, Gift,
-  Target, Sparkles, Check, ArrowRight,
-  Users, Calendar, CreditCard, Monitor,
-  Smartphone, AlertTriangle, Lock,
-  Zap, Mail
+  Target, Sparkles, Check, ArrowRight
 } from 'lucide-react'
 
-// Import crypto alarm logo
-import CryptoAlarmLogo from '/cryptoAlarmLogo.png'
+
 
 const PremiumPage: React.FC = () => {
   const [isAnnual, setIsAnnual] = useState(false)
@@ -249,7 +245,7 @@ const PremiumPage: React.FC = () => {
       <section className="pb-20">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {plans.map((plan, index) => (
+            {plans.map((plan) => (
               <Card 
                 key={plan.id} 
                 className={`relative bg-gray-800/50 border-gray-700 hover:scale-105 transition-all duration-300 ${
