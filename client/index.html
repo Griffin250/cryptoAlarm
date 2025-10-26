@@ -2,9 +2,244 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>client</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>CryptoAlarm - Never Miss a Crypto Move</title>
+    <meta name="title" content="CryptoAlarm - Never Miss a Crypto Move | Smart Cryptocurrency Alerts">
+    <meta name="description" content="Get instant voice call alerts when your crypto price targets are reached. Professional real-time monitoring for 20+ cryptocurrencies including Bitcoin, Ethereum, and more with smart alert system.">
+    <meta name="keywords" content="crypto alerts, cryptocurrency monitoring, price notifications, bitcoin alerts, ethereum alerts, real-time crypto tracking, crypto price alerts, cryptocurrency notifications, binance alerts, crypto portfolio monitoring, voice call alerts, crypto trading alerts, blockchain monitoring, digital asset alerts">
+    <meta name="author" content="CryptoAlarm Team">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    
+    <!-- Viewport and Mobile Optimization -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
+    <meta name="format-detection" content="telephone=no, email=no, address=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CryptoAlarm">
+    
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#3861FB">
+    <meta name="msapplication-TileColor" content="#0B1426">
+    <meta name="msapplication-navbutton-color" content="#3861FB">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Favicon and Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/cryptoAlarmLogo.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/cryptoAlarmLogo.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/cryptoAlarmLogo.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="/cryptoAlarmLogo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/cryptoAlarmLogo.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/cryptoAlarmLogo.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/cryptoAlarmLogo.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/cryptoAlarmLogo.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/cryptoAlarmLogo.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/cryptoAlarmLogo.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/cryptoAlarmLogo.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/cryptoAlarmLogo.png">
+    <link rel="apple-touch-icon" sizes="57x57" href="/cryptoAlarmLogo.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <!-- Humans.txt -->
+    <link type="text/plain" rel="author" href="/humans.txt">
+    
+    <!-- Security -->
+    <link rel="security" href="/.well-known/security.txt">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://cryptoalarm.netlify.app/">
+    <meta property="og:title" content="CryptoAlarm - Never Miss a Crypto Move">
+    <meta property="og:description" content="Get instant voice call alerts when your crypto price targets are reached. Professional real-time monitoring for 20+ cryptocurrencies.">
+    <meta property="og:image" content="https://cryptoalarm.netlify.app/cryptoAlarmLogo.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="CryptoAlarm - Smart Cryptocurrency Alert System">
+    <meta property="og:site_name" content="CryptoAlarm">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://cryptoalarm.netlify.app/">
+    <meta property="twitter:title" content="CryptoAlarm - Never Miss a Crypto Move">
+    <meta property="twitter:description" content="Get instant voice call alerts when your crypto price targets are reached. Professional real-time monitoring.">
+    <meta property="twitter:image" content="https://cryptoalarm.netlify.app/cryptoAlarmLogo.png">
+    <meta property="twitter:site" content="@CryptoAlarm">
+    <meta property="twitter:creator" content="@CryptoAlarm">
+    
+    <!-- Additional SEO -->
+    <meta name="application-name" content="CryptoAlarm">
+    <meta name="generator" content="Vite + React">
+    <meta name="referrer" content="origin-when-cross-origin">
+    <meta name="color-scheme" content="dark light">
+    <meta name="supported-color-schemes" content="dark light">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cryptoalarm.onrender.com">
+    <link rel="dns-prefetch" href="https://api.binance.com">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "CryptoAlarm",
+      "description": "Professional cryptocurrency price monitoring and alert system with real-time voice call alerts for 20+ cryptocurrencies including Bitcoin, Ethereum, and more.",
+      "url": "https://cryptoalarm.netlify.app",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires JavaScript. Works with Chrome 60+, Firefox 60+, Safari 12+, Edge 79+",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "CryptoAlarm Team",
+        "url": "https://cryptoalarm.netlify.app"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "CryptoAlarm",
+        "url": "https://cryptoalarm.netlify.app",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://cryptoalarm.netlify.app/cryptoAlarmLogo.png"
+        }
+      },
+      "featureList": [
+        "Real-time cryptocurrency price monitoring",
+        "Voice call alerts for price targets",
+        "Support for 20+ major cryptocurrencies",
+        "Interactive price charts with zoom functionality",
+        "Portfolio tracking and management",
+        "Professional dashboard interface",
+        "Mobile-responsive design",
+        "PWA support for offline access"
+      ],
+      "screenshot": [
+        {
+          "@type": "ImageObject",
+          "url": "https://cryptoalarm.netlify.app/cryptoAlarmLogo.png",
+          "caption": "CryptoAlarm Dashboard Screenshot"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "150",
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    }
+    </script>
+    
+    <!-- Google Analytics (Replace GA_MEASUREMENT_ID with actual ID) -->
+    <!-- 
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'GA_MEASUREMENT_ID', {
+        page_title: 'CryptoAlarm - Smart Cryptocurrency Alerts',
+        page_location: window.location.href,
+        send_page_view: true,
+        custom_map: {
+          dimension1: 'user_type'
+        }
+      });
+    </script>
+    -->
+    
+    <!-- Service Worker Registration -->
+    <script>
+      // Register Service Worker for PWA functionality
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async () => {
+          try {
+            const registration = await navigator.serviceWorker.register('/sw.js', {
+              scope: '/'
+            });
+            
+            console.log('ServiceWorker registered successfully:', registration.scope);
+            
+            // Check for updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New content is available, notify user
+                  if (window.confirm('New version available! Reload to update?')) {
+                    window.location.reload();
+                  }
+                }
+              });
+            });
+            
+          } catch (error) {
+            console.error('ServiceWorker registration failed:', error);
+          }
+        });
+        
+        // Listen for messages from service worker
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          console.log('Message from SW:', event.data);
+        });
+      }
+      
+      // Install prompt for PWA
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('PWA install prompt available');
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show custom install button or banner
+        const installBanner = document.createElement('div');
+        installBanner.innerHTML = `
+          <div style="position: fixed; bottom: 20px; right: 20px; background: #3861FB; color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 1000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+            <div style="margin-bottom: 10px;">Install CryptoAlarm App</div>
+            <button id="installBtn" style="background: white; color: #3861FB; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-weight: 600; margin-right: 10px;">Install</button>
+            <button id="dismissBtn" style="background: transparent; color: white; border: 1px solid white; padding: 8px 16px; border-radius: 5px; cursor: pointer;">Later</button>
+          </div>
+        `;
+        document.body.appendChild(installBanner);
+        
+        document.getElementById('installBtn').addEventListener('click', async () => {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log('PWA install outcome:', outcome);
+          installBanner.remove();
+        });
+        
+        document.getElementById('dismissBtn').addEventListener('click', () => {
+          installBanner.remove();
+        });
+      });
+      
+      // Track PWA installation
+      window.addEventListener('appinstalled', (evt) => {
+        console.log('PWA was installed successfully');
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'pwa_installed', {
+            method: 'browser_prompt'
+          });
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>

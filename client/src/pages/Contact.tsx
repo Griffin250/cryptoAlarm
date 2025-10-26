@@ -5,7 +5,7 @@ import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Textarea } from '../components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
-import ResponsiveNavbar from '../components/ResponsiveNavbar'
+import StandardNavbar from '../components/StandardNavbar'
 import { Link } from 'react-router-dom'
 import { 
   Mail, Phone, MessageCircle, Clock, MapPin, 
@@ -34,11 +34,9 @@ const ContactPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A]">
-      <ResponsiveNavbar 
+      <StandardNavbar 
         title="Contact Support" 
         subtitle="Get in touch with our team" 
-        showBackButton={true}
-        backUrl="/"
       />
 
       <div className="container mx-auto px-4 py-8">

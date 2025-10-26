@@ -2,18 +2,16 @@ import React from 'react'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Alert, AlertDescription } from '../components/ui/alert'
-import ResponsiveNavbar from '../components/ResponsiveNavbar'
+import StandardNavbar from '../components/StandardNavbar'
 import { Link } from 'react-router-dom'
 import { AlertTriangle, TrendingUp, DollarSign, Info, BookOpen, Scale } from 'lucide-react'
 
 const DisclaimerPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A]">
-      <ResponsiveNavbar 
+      <StandardNavbar 
         title="Disclaimer" 
         subtitle="Important legal and financial disclaimers" 
-        showBackButton={true}
-        backUrl="/"
       />
 
       <div className="container mx-auto px-4 py-8">

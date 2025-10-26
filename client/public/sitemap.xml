@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- Main Pages -->
+  <url>
+    <loc>https://cryptoalarm.netlify.app/</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/dashboard</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/portfolio</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/alerts</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/profile</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/settings</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/help</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <!-- Cryptocurrency Detail Pages -->
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/BTC</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/ETH</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/BNB</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/SOL</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/XRP</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/ADA</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/AVAX</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/DOGE</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/DOT</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/SHIB</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/MATIC</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/LTC</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/UNI</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/ATOM</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/LINK</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/ETC</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/XLM</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/BCH</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/FIL</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  
+  <url>
+    <loc>https://cryptoalarm.netlify.app/crypto/TRX</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+</urlset>

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
+import StandardNavbar from '../components/StandardNavbar'
 import PriceChart, { type CandlestickData } from '../components/PriceChart'
 
 // Import crypto icons
@@ -72,9 +73,8 @@ const cryptoInfo: Record<string, {name: string; symbol: string; icon: string; ra
 }
 
 import { 
-  ArrowLeft, TrendingUp, TrendingDown, Users, Heart, MessageCircle, 
-  Share, BarChart3, Bell, Target, Clock, ArrowUp, Zap, 
-  ExternalLink, Bookmark, RefreshCw, ArrowRight, Menu, X, Maximize2, Minimize2
+  TrendingUp, TrendingDown, BarChart3, Target, Clock, ArrowUp, Zap,
+  Bookmark, RefreshCw, ArrowRight, Maximize2, Minimize2, ExternalLink, Heart, MessageCircle
 } from 'lucide-react'
 
 interface CryptoData {
@@ -113,12 +113,9 @@ interface CryptoData {
 
 const CryptoDetail: React.FC = () => {
   const { symbol } = useParams<{ symbol: string }>()
-  const navigate = useNavigate()
   const [timeframe, setTimeframe] = useState('24h')
-  const [isFollowing, setIsFollowing] = useState(false)
 
   const [isLoading, setIsLoading] = useState(true)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [chartType, setChartType] = useState<'line' | 'candlestick'>('line')
   const [isChartMaximized, setIsChartMaximized] = useState(false)
 
@@ -377,132 +374,10 @@ const CryptoDetail: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A] text-white">
-      {/* Responsive Header */}
-      <div className="border-b border-gray-800 bg-[#0B1426]/80 backdrop-blur-lg sticky top-0 z-50">
-        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <div className="flex items-center justify-between">
-            {/* Left Section - Back Button & Crypto Info */}
-            <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(-1)}
-                className="text-gray-400 hover:text-white p-1 sm:p-2 flex-shrink-0"
-              >
-                <ArrowLeft className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Back</span>
-              </Button>
-              
-              <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center flex-shrink-0">
-                  {CRYPTO_ICONS[currentSymbol] ? (
-                    <img 
-                      src={CRYPTO_ICONS[currentSymbol]} 
-                      alt={currentSymbol} 
-                      width={24}
-                      height={24}
-                      className="sm:w-8 sm:h-8 rounded-full object-cover" 
-                    />
-                  ) : (
-                    <div className={`w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r ${
-                      cryptoData.symbol === 'BTC' ? 'from-orange-400 to-orange-600' :
-                      cryptoData.symbol === 'ETH' ? 'from-blue-400 to-blue-600' :
-                      'from-purple-400 to-purple-600'
-                    } rounded-full flex items-center justify-center`}>
-                      <span className="text-white font-bold text-xs sm:text-sm">{displayInfo.icon}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center space-x-1 sm:space-x-2">
-                    <h1 className="text-lg sm:text-xl font-bold truncate">{cryptoData.name}</h1>
-                    <Badge className="bg-blue-600 text-white text-xs flex-shrink-0">{cryptoData.symbol}</Badge>
-                    <Badge className="bg-yellow-600 text-white text-xs flex-shrink-0">#{displayInfo.rank}</Badge>
-                  </div>
-                  <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm text-gray-400">
-                    <div className="flex items-center space-x-1">
-                      <Users className="h-2 w-2 sm:h-3 sm:w-3" />
-                      <span className="truncate">{cryptoData.sentiment.votes.toLocaleString()}</span>
-                    </div>
-                    <div className="hidden sm:block">•</div>
-                    <div className="hidden sm:flex items-center space-x-1">
-                      <span>Rank #{displayInfo.rank}</span>
-                    </div>
-                    {isLoading && (
-                      <>
-                        <div className="hidden lg:block">•</div>
-                        <div className="hidden lg:flex items-center space-x-1 text-blue-400">
-                          <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></div>
-                          <span className="text-xs">Live</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Section - Action Buttons */}
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              {/* Mobile Menu Toggle */}
-              <Button
-                variant="outline"
-                size="sm"
-                className="sm:hidden border-gray-600 text-gray-300 p-2"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-              </Button>
-
-              {/* Desktop Action Buttons */}
-              <div className="hidden sm:flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`${isFollowing ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-600 text-gray-300'}`}
-                  onClick={() => setIsFollowing(!isFollowing)}
-                >
-                  {isFollowing ? '✓ Following' : '+ Follow'}
-                </Button>
-                <Button variant="outline" size="sm" className="border-gray-600 text-gray-300">
-                  <Bell className="h-4 w-4 mr-1" />
-                  Alert
-                </Button>
-                <Button variant="outline" size="sm" className="border-gray-600 text-gray-300">
-                  <Share className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile Action Menu */}
-          {isMobileMenuOpen && (
-            <div className="sm:hidden mt-3 pt-3 border-t border-gray-700">
-              <div className="flex flex-col space-y-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`${isFollowing ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-600 text-gray-300'}`}
-                  onClick={() => {
-                    setIsFollowing(!isFollowing)
-                    setIsMobileMenuOpen(false)
-                  }}
-                >
-                  {isFollowing ? '✓ Following' : '+ Follow'}
-                </Button>
-                <Button variant="outline" size="sm" className="border-gray-600 text-gray-300">
-                  <Bell className="h-4 w-4 mr-1" />
-                  Set Price Alert
-                </Button>
-                <Button variant="outline" size="sm" className="border-gray-600 text-gray-300">
-                  <Share className="h-4 w-4 mr-1" />
-                  Share
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      <StandardNavbar 
+        title={`${cryptoData.name} (${cryptoData.symbol})`}
+        subtitle={`Rank #${displayInfo.rank} • ${formatNumber(cryptoData.sentiment.votes)} votes`}
+      />
 
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -592,7 +467,7 @@ const CryptoDetail: React.FC = () => {
                 </div>
 
                 {/* Interactive Price Chart */}
-                <div className="mt-4 sm:mt-6 h-48 sm:h-56 lg:h-64 bg-gray-800/50 rounded-lg border border-gray-700 p-2 sm:p-4 relative overflow-hidden">
+                <div className="mt-4 sm:mt-6 h-64 sm:h-80 lg:h-96 bg-gray-800/50 rounded-lg border border-gray-700 p-2 sm:p-4 relative overflow-hidden">
                   {isLoading ? (
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center">
@@ -603,7 +478,7 @@ const CryptoDetail: React.FC = () => {
                   ) : (chartType === 'line' ? cryptoData.priceHistory.length > 1 : cryptoData.candlestickData.length > 1) ? (
                     <PriceChart 
                       data={chartType === 'line' ? cryptoData.priceHistory : cryptoData.candlestickData}
-                      height={240}
+                      height={320}
                       color={cryptoData.change24h >= 0 ? '#10B981' : '#EF4444'}
                       showGradient={chartType === 'line'}
                       chartType={chartType}
@@ -1023,7 +898,7 @@ const CryptoDetail: React.FC = () => {
               ) : (chartType === 'line' ? cryptoData.priceHistory.length > 1 : cryptoData.candlestickData.length > 1) ? (
                 <PriceChart 
                   data={chartType === 'line' ? cryptoData.priceHistory : cryptoData.candlestickData}
-                  height={Math.min(window.innerHeight * 0.7, 600)}
+                  height={Math.min(window.innerHeight * 0.8, 800)}
                   color={cryptoData.change24h >= 0 ? '#10B981' : '#EF4444'}
                   showGradient={chartType === 'line'}
                   chartType={chartType}

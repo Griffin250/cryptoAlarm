@@ -1,0 +1,26 @@
+# Security Policy for CryptoAlarm
+# https://cryptoalarm.netlify.app/.well-known/security.txt
+
+Contact: mailto:security@cryptoalarm.app
+Expires: 2025-12-19T23:59:59.000Z
+Encryption: https://cryptoalarm.netlify.app/pgp-key.txt
+Preferred-Languages: en, es, fr, de
+Canonical: https://cryptoalarm.netlify.app/.well-known/security.txt
+Policy: https://cryptoalarm.netlify.app/security-policy
+Acknowledgments: https://cryptoalarm.netlify.app/security-acknowledgments
+
+# Reporting Security Vulnerabilities
+# We take security seriously. Please report security vulnerabilities
+# to security@cryptoalarm.app with detailed information about the issue.
+
+# Bug Bounty Information
+# We appreciate responsible disclosure and may offer rewards for
+# significant security findings that help improve our platform.
+
+# Scope
+# In scope: All CryptoAlarm web applications and APIs
+# Out of scope: Third-party services and dependencies
+
+# Response Time
+# We aim to acknowledge reports within 24 hours and provide
+# initial assessment within 72 hours.

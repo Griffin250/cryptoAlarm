@@ -2,7 +2,7 @@ import React from 'react'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
-import ResponsiveNavbar from '../components/ResponsiveNavbar'
+import StandardNavbar from '../components/StandardNavbar'
 import { Link } from 'react-router-dom'
 import { 
   Sparkles, ArrowRight, Star, Zap, Crown, CheckCircle, 
@@ -72,11 +72,9 @@ const ComingSoonPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A]">
-      <ResponsiveNavbar 
+      <StandardNavbar 
         title="Coming Soon" 
         subtitle="Future features and roadmap" 
-        showBackButton={true}
-        backUrl="/"
       />
 
       <div className="container mx-auto px-4 py-8">

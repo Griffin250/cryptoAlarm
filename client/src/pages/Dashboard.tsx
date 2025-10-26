@@ -32,12 +32,14 @@ const CRYPTO_ICONS: Record<string, string> = {
 
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
-import { AuthProvider } from "../context/AuthContext";
 // import AlertManager from "../components/AlertManager";
+import ProfileAvatar from "../components/ProfileAvatar";
+import { useAuth } from "../context/AuthContext";
 import { 
   Phone, Wifi, WifiOff, Star, 
   Settings, Bell, User, Search, Menu, BarChart3, 
-  Globe, ArrowLeft, RefreshCw, CreditCard
+  Globe, RefreshCw, CreditCard, ChevronDown, 
+  UserCircle, Edit, Crown, HelpCircle, LogOut
 } from "lucide-react";
 
 // Crypto info mapping - Extended list
@@ -82,6 +84,7 @@ interface PriceAnimations {
 }
 
 export default function Dashboard() {
+  const { profile } = useAuth();
   const [prices, setPrices] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(false);
   const [alertMsg, setAlertMsg] = useState("");
@@ -90,10 +93,24 @@ export default function Dashboard() {
   const [metricsLoading, setMetricsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [priceAnimations, setPriceAnimations] = useState<PriceAnimations>({});
-  const [activeTab, setActiveTab] = useState("alerts"); // "dashboard" or "alerts"
+  // Removed activeTab state - Dashboard component now shows only dashboard content
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileFeaturesOpen, setIsMobileFeaturesOpen] = useState(false);
+  const [isMobileAccountOpen, setIsMobileAccountOpen] = useState(false);
   const previousPricesRef = useRef<Record<string, number>>({});
   const priceHistoryRef = useRef<Record<string, Array<{price: number; timestamp: number}>>>({});
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // User menu items
+  const userMenuItems = [
+    { label: 'View Profile', href: '/profile', icon: UserCircle },
+    { label: 'Edit Profile', href: '/profile/edit', icon: Edit },
+    { label: 'Settings', href: '/settings', icon: Settings },
+    { label: 'Upgrade to Premium', href: '/premium', icon: Crown },
+    { label: 'Help & Support', href: '/help', icon: HelpCircle },
+    { label: 'Sign Out', href: '/logout', icon: LogOut, isLogout: true },
+  ];
   
   // Auto-refresh controls
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -219,17 +236,27 @@ export default function Dashboard() {
     setRefreshInterval(newInterval);
   };
 
-  // Close mobile menu on window resize or outside click
+  // Close mobile menu and user menu on window resize or outside click
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) { // lg breakpoint
         setMobileMenuOpen(false);
+        setIsMobileFeaturesOpen(false);
+        setIsMobileAccountOpen(false);
       }
     };
 
     const handleClickOutside = (event: MouseEvent) => {
+      // Close mobile menu
       if (mobileMenuOpen && !(event.target as Element).closest('header')) {
         setMobileMenuOpen(false);
+        setIsMobileFeaturesOpen(false);
+        setIsMobileAccountOpen(false);
+      }
+      
+      // Close user menu
+      if (isUserMenuOpen && userMenuRef.current && !(event.target as Element).closest('#user-menu')) {
+        setIsUserMenuOpen(false);
       }
     };
 
@@ -240,7 +267,7 @@ export default function Dashboard() {
       window.removeEventListener('resize', handleResize);
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, isUserMenuOpen]);
 
   const sendTestAlert = async () => {
     setLoading(true);
@@ -290,78 +317,124 @@ export default function Dashboard() {
       <header className="sticky top-0 z-50 backdrop-blur-lg bg-[#0B1426]/90 border-b border-gray-800/50">
         <div className="container mx-auto px-2 sm:px-4">
           <div className="flex items-center justify-between h-16 gap-2">
-            {/* Left Side - Logo & Navigation */}
-            <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
-              <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
-                <Link to="/" className="flex items-center p-1">
-                  <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 hover:text-white transition-colors" />
-                </Link>
-                
-                <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity cursor-pointer min-w-0">
-                  <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-1.5 sm:p-2 rounded-lg sm:rounded-xl flex-shrink-0">
-                    <img 
-                      src="/cryptoAlarmLogo.png" 
-                      alt="CryptoAlarm Logo" 
-                      width={14} 
-                      height={14} 
-                      className="object-contain sm:w-4 sm:h-4"
-                    />
+            {/* Left Side - Logo & App Name */}
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity cursor-pointer">
+                <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-1.5 sm:p-2 rounded-lg sm:rounded-xl flex-shrink-0">
+                  <img 
+                    src="/cryptoAlarmLogo.png" 
+                    alt="CryptoAlarm Logo" 
+                    width={16} 
+                    height={16} 
+                    className="object-contain sm:w-5 sm:h-5"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <h1 className="text-sm sm:text-base lg:text-lg font-bold text-white truncate">CryptoAlarm</h1>
+                  <div className="hidden sm:block text-xs text-gray-400 truncate">
+                    Professional Trading Platform
                   </div>
-                  <div className="hidden sm:block min-w-0">
-                    <h1 className="text-base lg:text-lg font-bold text-white truncate">CryptoAlarm</h1>
-                    <div className="text-xs text-gray-400 flex items-center truncate">
-                      <span className="truncate">Professional Trading Platform</span>
-                    </div>
-                  </div>
-                  <div className="sm:hidden min-w-0">
-                    <h1 className="text-sm font-bold text-white truncate">CryptoAlarm</h1>
-                  </div>
-                </Link>
-              </div>
-
-              {/* Desktop Navigation Links */}
-              <nav className="hidden lg:flex items-center space-x-0.5 xl:space-x-1 flex-shrink-0">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className={`px-2 xl:px-3 ${activeTab === "dashboard" ? "text-[#3861FB] bg-[#3861FB]/10" : "text-muted-foreground hover:text-foreground"}`}
-                  onClick={() => setActiveTab("dashboard")}
-                >
-                  <BarChart3 className="h-4 w-4 xl:mr-2" />
-                  <span className="hidden xl:inline">Dashboard</span>
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className={`px-2 xl:px-3 ${activeTab === "alerts" ? "text-[#3861FB] bg-[#3861FB]/10" : "text-muted-foreground hover:text-foreground"}`}
-                  onClick={() => setActiveTab("alerts")}
-                >
-                  <Bell className="h-4 w-4 xl:mr-2" />
-                  <span className="hidden xl:inline">Alerts</span>
-                </Button>
-                <Link to="/portfolio">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground px-2 xl:px-3">
-                    <Globe className="h-4 w-4 xl:mr-2" />
-                    <span className="hidden xl:inline">Portfolio</span>
-                  </Button>
-                </Link>
-                <Link to="/virtual-card">
-                  <Button variant="ghost" size="sm" className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 px-2 xl:px-3">
-                    <CreditCard className="h-4 w-4 xl:mr-2" />
-                    <span className="hidden xl:inline">Virtual Card</span>
-                  </Button>
-                </Link>
-                <Link to="/premium">
-                  <Button variant="ghost" size="sm" className="text-[#16C784] hover:text-[#14B575] hover:bg-[#16C784]/10 px-2 xl:px-3">
-                    <Star className="h-4 w-4 xl:mr-2" />
-                    <span className="hidden xl:inline">Premium</span>
-                  </Button>
-                </Link>
-              </nav>
+                </div>
+              </Link>
             </div>
 
-            {/* Center Spacer - Search bar hidden for better layout */}
-            <div className="hidden lg:flex flex-1" />
+            {/* Center Navigation */}
+            <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2 flex-shrink-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="px-3 xl:px-4 text-[#3861FB] bg-[#3861FB]/10 font-medium"
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Dashboard
+              </Button>
+              
+              <Link to="/alerts">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="px-3 xl:px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium"
+                >
+                  <Bell className="h-4 w-4 mr-2" />
+                  Alerts
+                </Button>
+              </Link>
+              
+              <Link to="/portfolio">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="px-3 xl:px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium"
+                >
+                  <Globe className="h-4 w-4 mr-2" />
+                  Portfolio
+                </Button>
+              </Link>
+              
+              <Link to="/virtual-card">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="px-3 xl:px-4 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 font-medium"
+                >
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  CryptoPass
+                </Button>
+              </Link>
+              
+              {/* Features Dropdown */}
+              <div className="relative group">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="px-3 xl:px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Features
+                  <svg className="ml-1 h-3 w-3 transform group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </Button>
+                
+                {/* Dropdown Menu */}
+                <div className="absolute top-full left-0 mt-1 w-48 bg-gray-900/95 backdrop-blur-lg border border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="py-2">
+                    <Link to="/premium" className="block px-4 py-2 text-sm text-[#16C784] hover:bg-[#16C784]/10 hover:text-[#14B575] transition-colors">
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 mr-2" />
+                        Premium Plan
+                      </div>
+                    </Link>
+                    <Link to="/settings" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800/50 hover:text-white transition-colors">
+                      <div className="flex items-center">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Settings
+                      </div>
+                    </Link>
+                    <Link to="/profile" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800/50 hover:text-white transition-colors">
+                      <div className="flex items-center">
+                        <User className="h-4 w-4 mr-2" />
+                        Profile
+                      </div>
+                    </Link>
+                    <div className="border-t border-gray-700 mt-2 pt-2">
+                      <Link to="/help" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800/50 hover:text-white transition-colors">
+                        <div className="flex items-center">
+                          <Phone className="h-4 w-4 mr-2" />
+                          Help & Support
+                        </div>
+                      </Link>
+                      <Link to="/coming-soon" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800/50 hover:text-white transition-colors">
+                        <div className="flex items-center">
+                          <Globe className="h-4 w-4 mr-2" />
+                          Coming Soon
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </nav>
 
             {/* Right Side - Actions & Status */}
             <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
@@ -447,13 +520,44 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Desktop Action Buttons - Hidden on smaller screens */}
+              {/* Desktop User Profile - Hidden on smaller screens */}
               <div className="hidden lg:flex items-center space-x-1">
-                <Link to="/profile">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground px-2">
-                    <User className="h-4 w-4" />
+                <div className="relative" id="user-menu" ref={userMenuRef}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex items-center space-x-2 text-muted-foreground hover:text-foreground px-2"
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  >
+                    <ProfileAvatar user={profile} size="sm" />
+                    <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                   </Button>
-                </Link>
+                  
+                  {/* User Dropdown Menu */}
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 top-full mt-1 w-48 bg-gray-900/95 backdrop-blur-lg border border-gray-700 rounded-lg shadow-lg z-50">
+                      <div className="py-2">
+                        {userMenuItems.map((item, index) => (
+                          <Link 
+                            key={index}
+                            to={item.href} 
+                            className={`block px-4 py-2 text-sm hover:bg-gray-800/50 transition-colors ${
+                              item.isLogout 
+                                ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10' 
+                                : 'text-gray-300 hover:text-white'
+                            }`}
+                            onClick={() => setIsUserMenuOpen(false)}
+                          >
+                            <div className="flex items-center">
+                              <item.icon className="h-4 w-4 mr-2" />
+                              {item.label}
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Mobile Menu Button */}
@@ -461,7 +565,14 @@ export default function Dashboard() {
                 variant="ghost" 
                 size="sm" 
                 className="lg:hidden text-muted-foreground hover:text-foreground px-2"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                onClick={() => {
+                  setMobileMenuOpen(!mobileMenuOpen);
+                  // Reset mobile dropdown states when closing
+                  if (mobileMenuOpen) {
+                    setIsMobileFeaturesOpen(false);
+                    setIsMobileAccountOpen(false);
+                  }
+                }}
               >
                 <Menu className="h-4 w-4" />
               </Button>
@@ -489,60 +600,129 @@ export default function Dashboard() {
               
               {/* Mobile Navigation */}
               <nav className="space-y-2">
+                {/* Main Navigation */}
                 <Button 
                   variant="ghost" 
-                  className={`w-full justify-start ${activeTab === "dashboard" ? "text-[#3861FB] bg-[#3861FB]/10" : "text-muted-foreground hover:text-foreground"}`}
-                  onClick={() => {
-                    setActiveTab("dashboard");
-                    setMobileMenuOpen(false);
-                  }}
+                  className="w-full justify-start text-[#3861FB] bg-[#3861FB]/10 font-medium"
+                  onClick={() => setMobileMenuOpen(false)}
                 >
                   <BarChart3 className="h-4 w-4 mr-3" />
                   Dashboard
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  className={`w-full justify-start ${activeTab === "alerts" ? "text-[#3861FB] bg-[#3861FB]/10" : "text-muted-foreground hover:text-foreground"}`}
-                  onClick={() => {
-                    setActiveTab("alerts");
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  <Bell className="h-4 w-4 mr-3" />
-                  Alerts
-                </Button>
+                
+                <Link to="/alerts" onClick={() => setMobileMenuOpen(false)}>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start text-muted-foreground hover:text-foreground font-medium"
+                  >
+                    <Bell className="h-4 w-4 mr-3" />
+                    Alerts
+                  </Button>
+                </Link>
                 <Link to="/portfolio" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
+                  <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-medium">
                     <Globe className="h-4 w-4 mr-3" />
                     Portfolio
                   </Button>
                 </Link>
+                
                 <Link to="/virtual-card" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start text-purple-400 hover:text-purple-300 hover:bg-purple-500/10">
+                  <Button variant="ghost" className="w-full justify-start text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 font-medium">
                     <CreditCard className="h-4 w-4 mr-3" />
-                    Virtual Card
-                  </Button>
-                </Link>
-                <Link to="/premium" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start text-[#16C784] hover:text-[#14B575] hover:bg-[#16C784]/10">
-                    <Star className="h-4 w-4 mr-3" />
-                    Premium
+                    CryptoPass
                   </Button>
                 </Link>
                 
+                {/* Features Dropdown */}
                 <div className="border-t border-gray-800/50 pt-2 mt-2">
-                  <Link to="/settings" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-between text-muted-foreground hover:text-foreground hover:bg-gray-800/50 font-medium py-3 transition-colors duration-200"
+                    onClick={() => setIsMobileFeaturesOpen(!isMobileFeaturesOpen)}
+                  >
+                    <div className="flex items-center">
                       <Settings className="h-4 w-4 mr-3" />
-                      Settings
-                    </Button>
-                  </Link>
-                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
-                      <User className="h-4 w-4 mr-3" />
-                      Profile
-                    </Button>
-                  </Link>
+                      <span className="text-sm font-medium">Features</span>
+                    </div>
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isMobileFeaturesOpen ? 'rotate-180' : ''}`} />
+                  </Button>
+                  
+                  {isMobileFeaturesOpen && (
+                    <div className="pl-4 space-y-1 mt-2 animate-in slide-in-from-top-1 duration-200">
+                      <Link to="/premium" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start text-[#16C784] hover:text-[#14B575] hover:bg-[#16C784]/10 py-2">
+                          <Star className="h-4 w-4 mr-3" />
+                          Premium Plan
+                        </Button>
+                      </Link>
+                      
+                      <Link to="/settings" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground py-2">
+                          <Settings className="h-4 w-4 mr-3" />
+                          Settings
+                        </Button>
+                      </Link>
+                      
+                      <Link to="/help" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground py-2">
+                          <Phone className="h-4 w-4 mr-3" />
+                          Help & Support
+                        </Button>
+                      </Link>
+                      
+                      <Link to="/coming-soon" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground py-2">
+                          <Globe className="h-4 w-4 mr-3" />
+                          Coming Soon
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* User Account Dropdown */}
+                <div className="border-t border-gray-800/50 pt-2 mt-2">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-between text-muted-foreground hover:text-foreground hover:bg-gray-800/50 font-medium p-3 transition-colors duration-200"
+                    onClick={() => setIsMobileAccountOpen(!isMobileAccountOpen)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <ProfileAvatar user={profile} size="sm" showOnlineStatus />
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-medium text-white">
+                          {profile?.first_name || 'User'}
+                          {profile?.last_name && ` ${profile.last_name}`}
+                        </span>
+                        <span className="text-xs text-gray-400">Account & Settings</span>
+                      </div>
+                    </div>
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isMobileAccountOpen ? 'rotate-180' : ''}`} />
+                  </Button>
+                  
+                  {isMobileAccountOpen && (
+                    <div className="pl-4 space-y-1 mt-2 animate-in slide-in-from-top-1 duration-200">
+                      {userMenuItems.map((item, index) => (
+                        <Link 
+                          key={index}
+                          to={item.href} 
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <Button 
+                            variant="ghost" 
+                            className={`w-full justify-start py-2 ${
+                              item.isLogout 
+                                ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10' 
+                                : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            <item.icon className="h-4 w-4 mr-3" />
+                            {item.label}
+                          </Button>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 
                 {/* Mobile Connection Status & Refresh Controls */}
@@ -636,8 +816,6 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-grow">
-        {activeTab === "dashboard" ? (
-          <>
             {/* Market Overview */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6 lg:mb-8">
               <Card className="hover:shadow-md transition-all duration-300 border-l-2 border-l-blue-400/60">
@@ -916,68 +1094,8 @@ export default function Dashboard() {
                 )}
               </CardContent>
             </Card>
-          </>
-        ) : (
-          <div className="flex flex-col min-h-full">
-            {/* Alert Management Tab */}
-            <div className="flex-grow space-y-4">
-              <AuthProvider>
-                <Card className="bg-gray-900/50 border-gray-700">
-                  <CardHeader>
-                    <CardTitle className="text-white">Alert Management</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8">
-                      <p className="text-gray-400">Alert Manager will be loaded here</p>
-                      <p className="text-gray-500 text-sm mt-2">
-                        Connect to backend to manage your alerts
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </AuthProvider>
-            </div>
-          </div>
-        )}
       </main>
 
-      {/* Footer for Alerts Tab - Outside main, at bottom */}
-      {activeTab === "alerts" && (
-        <footer className="py-8 border-t border-gray-800 bg-[#0B1426]/50 backdrop-blur-lg">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-              {/* Left - Branding */}
-              <div className="text-center lg:text-left">
-                <div className="text-gray-400 text-sm font-medium">
-                  © 2025 CryptoAlarm. Smart alerts for smart traders.
-                </div>
-                <div className="text-gray-500 text-xs mt-1">
-                  Voice notifications • Real-time monitoring
-                </div>
-              </div>
-              
-              {/* Center - Version Badge */}
-              <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 border border-gray-600/30 px-6 py-3 rounded-full backdrop-blur-sm">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-[#16C784] rounded-full animate-pulse"></div>
-                  <span className="text-[#3861FB] font-bold text-lg">v1.0.15</span>
-                  <div className="w-2 h-2 bg-[#16C784] rounded-full animate-pulse delay-1000"></div>
-                </div>
-              </div>
-              
-              {/* Right - Alert Info */}
-              <div className="text-center lg:text-right">
-                <div className="text-gray-400 text-sm font-medium">
-                  Alert Management System
-                </div>
-                <div className="text-gray-500 text-xs mt-1">
-                  Price targets • Percentage alerts • CRUD operations
-                </div>
-              </div>
-            </div>
-          </div>
-        </footer>
-      )}
     </div>
   );
 }

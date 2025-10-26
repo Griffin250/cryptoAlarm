@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
-import ResponsiveNavbar from '../components/ResponsiveNavbar'
+import StandardNavbar from '../components/StandardNavbar'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from '../components/AuthModal'
 import { 
@@ -418,33 +418,11 @@ const PortfolioPage: React.FC = () => {
     return sortOrder === "desc" ? bValue - aValue : aValue - bValue;
   });
 
-  const portfolioBreadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Portfolio", href: "/portfolio" }
-  ];
-
-  const portfolioActions = [
-    <Button 
-      key="add-transaction"
-      size="sm" 
-      className="bg-[#3861FB] hover:bg-[#2851FB] text-white w-full md:w-auto"
-      onClick={() => {/* Add transaction logic */}}
-    >
-      <Plus className="h-4 w-4 mr-2" />
-      Add Transaction
-    </Button>
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A]">
-      <ResponsiveNavbar 
-        title="CryptoAlarm"
-        subtitle="Portfolio Management"
-        breadcrumbs={portfolioBreadcrumbs}
-        actions={portfolioActions}
-        showBackButton={true}
-        backUrl="/dashboard"
-        isConnected={true}
+      <StandardNavbar 
+        title="Portfolio Management"
+        subtitle="Track and manage your crypto portfolio"
       />
       
       {/* Auth Modal */}

@@ -3,6 +3,7 @@ import { Button } from '../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import { Link } from 'react-router-dom'
+import StandardNavbar from '../components/StandardNavbar'
 import { 
   Crown, CheckCircle, X, Shield, Star, 
   Bell, BarChart3, Phone, Globe, Gift,
@@ -148,41 +149,10 @@ const PremiumPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A]">
-      {/* Custom Premium Navbar - Old Style */}
-      <nav className="sticky top-0 z-50 backdrop-blur-lg bg-[#0B1426]/80 border-b border-gray-800">
-        <div className="container mx-auto px-3 sm:px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity cursor-pointer min-w-0">
-              <div className="bg-gradient-to-br from-[#3861FB] to-[#4F46E5] p-2 rounded-xl flex-shrink-0">
-                <img 
-                  src="/cryptoAlarmLogo.png" 
-                  alt="CryptoAlarm Logo" 
-                  width={20} 
-                  height={20} 
-                  className="sm:w-6 sm:h-6 object-contain"
-                />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl font-bold text-white">CryptoAlarm</h1>
-                <p className="text-xs text-gray-400 hidden sm:block">Premium Plans</p>
-              </div>
-            </Link>
-            
-            <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-              <Link to="/dashboard">
-                <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
-                  Dashboard
-                </Button>
-              </Link>
-              <Link to="/">
-                <Button variant="ghost" className="text-gray-400 hover:text-white">
-                  Back to Home
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <StandardNavbar 
+        title="CryptoPass Premium" 
+        subtitle="Unlock advanced crypto alert features" 
+      />
 
       {/* Hero Section */}
       <section className="py-20">

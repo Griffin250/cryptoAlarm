@@ -1,18 +1,16 @@
 import React from 'react'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import ResponsiveNavbar from '../components/ResponsiveNavbar'
+import StandardNavbar from '../components/StandardNavbar'
 import { Link } from 'react-router-dom'
 import { Shield, Lock, Eye, Database, Share2 } from 'lucide-react'
 
 const PrivacyPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A]">
-      <ResponsiveNavbar 
+      <StandardNavbar 
         title="Privacy Policy" 
         subtitle="How we protect and use your data" 
-        showBackButton={true}
-        backUrl="/"
       />
 
       <div className="container mx-auto px-4 py-8">

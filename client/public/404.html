@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - CryptoAlarm</title>
+    <meta name="description" content="The page you are looking for could not be found. Return to CryptoAlarm dashboard to continue monitoring your cryptocurrency alerts.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="canonical" href="https://cryptoalarm.netlify.app/404.html">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Page Not Found - CryptoAlarm">
+    <meta property="og:description" content="The requested page could not be found. Return to CryptoAlarm to continue monitoring your crypto alerts.">
+    <meta property="og:image" content="https://cryptoalarm.netlify.app/cryptoAlarmLogo.png">
+    <meta property="og:url" content="https://cryptoalarm.netlify.app/404.html">
+    
+    <!-- Inline critical CSS for fast loading -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0B1426 0%, #1a2332 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(56, 97, 251, 0.3);
+        }
+        
+        h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #3861FB;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(56, 97, 251, 0.5);
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+        
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3861FB 0%, #4f7bff 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(56, 97, 251, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 97, 251, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .suggestions {
+            margin-top: 3rem;
+            text-align: left;
+        }
+        
+        .suggestions h3 {
+            margin-bottom: 1rem;
+            color: #3861FB;
+        }
+        
+        .suggestions ul {
+            list-style: none;
+        }
+        
+        .suggestions li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .suggestions li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #3861FB;
+            font-weight: bold;
+        }
+        
+        .suggestions a {
+            color: #ffffff;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+        
+        .suggestions a:hover {
+            opacity: 1;
+            color: #3861FB;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 3rem;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="/cryptoAlarmLogo.png" alt="CryptoAlarm Logo" class="logo" loading="eager">
+        
+        <h1>404</h1>
+        <h2>Page Not Found</h2>
+        <p>
+            The page you're looking for seems to have disappeared into the crypto void. 
+            Don't worry though - your alerts are still monitoring the markets!
+        </p>
+        
+        <div class="buttons">
+            <a href="/" class="btn btn-primary">
+                🏠 Return Home
+            </a>
+            <a href="/dashboard" class="btn btn-secondary">
+                📊 Go to Dashboard
+            </a>
+        </div>
+        
+        <div class="suggestions">
+            <h3>Popular Pages:</h3>
+            <ul>
+                <li><a href="/dashboard">Cryptocurrency Dashboard</a></li>
+                <li><a href="/alerts">Manage Price Alerts</a></li>
+                <li><a href="/portfolio">Portfolio Overview</a></li>
+                <li><a href="/profile">User Profile</a></li>
+                <li><a href="/help">Help & Support</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Auto-redirect script for SPA routing -->
+    <script>
+        // Check if we're in a SPA environment and redirect to home
+        setTimeout(() => {
+            if (window.location.pathname !== '/' && !window.location.pathname.includes('.')) {
+                window.location.href = '/';
+            }
+        }, 5000);
+        
+        // Track 404 errors for analytics (if available)
+        if (typeof gtag !== 'undefined') {
+            gtag('event', '404_error', {
+                page_location: window.location.href,
+                page_title: document.title
+            });
+        }
+    </script>
+</body>
+</html>

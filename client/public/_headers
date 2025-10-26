@@ -1,0 +1,82 @@
+# Netlify Headers Configuration for CryptoAlarm
+# https://docs.netlify.com/routing/headers/
+
+/*
+  # Security Headers
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=()
+  
+  # Content Security Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://cryptoalarm.onrender.com https://api.binance.com wss://stream.binance.com https://www.google-analytics.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  
+  # HSTS (HTTP Strict Transport Security)
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  
+  # Performance Headers
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Static Assets - Long Cache
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: application/javascript; charset=utf-8
+
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: text/css; charset=utf-8
+
+# Images - Medium Cache
+/*.png
+  Cache-Control: public, max-age=86400
+  Content-Type: image/png
+
+/*.jpg
+/*.jpeg
+  Cache-Control: public, max-age=86400
+  Content-Type: image/jpeg
+
+/*.svg
+  Cache-Control: public, max-age=86400
+  Content-Type: image/svg+xml; charset=utf-8
+
+/*.ico
+  Cache-Control: public, max-age=86400
+  Content-Type: image/x-icon
+
+# Web App Manifest
+/manifest.json
+  Cache-Control: public, max-age=86400
+  Content-Type: application/manifest+json; charset=utf-8
+
+# SEO Files
+/robots.txt
+  Cache-Control: public, max-age=86400
+  Content-Type: text/plain; charset=utf-8
+
+/sitemap.xml
+  Cache-Control: public, max-age=86400
+  Content-Type: application/xml; charset=utf-8
+
+/humans.txt
+  Cache-Control: public, max-age=86400
+  Content-Type: text/plain; charset=utf-8
+
+# Security Files
+/.well-known/security.txt
+  Cache-Control: public, max-age=86400
+  Content-Type: text/plain; charset=utf-8
+
+# API Routes - No Cache
+/api/*
+  Cache-Control: no-store, no-cache, must-revalidate
+  X-Robots-Tag: noindex
+
+# Service Worker
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+  Content-Type: application/javascript; charset=utf-8

@@ -14,6 +14,7 @@ import Terms from './pages/Terms.tsx';
 import Privacy from './pages/Privacy.tsx';
 import Disclaimer from './pages/Disclaimer.tsx';
 import Contact from './pages/Contact.tsx';
+import Help from './pages/Help.tsx';
 import NotFound from './pages/NotFound.tsx';
 import CryptoDetail from './pages/CryptoDetail.tsx';
 
@@ -35,6 +36,7 @@ function App() {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/disclaimer" element={<Disclaimer />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/help" element={<Help />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster 

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Badge } from '../components/ui/badge'
-import ResponsiveNavbar from '../components/ResponsiveNavbar'
+import StandardNavbar from '../components/StandardNavbar'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from '../components/AuthModal'
 import { 
@@ -71,7 +71,7 @@ const ProfilePage: React.FC = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A]">
-        <ResponsiveNavbar 
+        <StandardNavbar 
           title="Profile" 
           subtitle="Manage your account" 
         />
@@ -133,11 +133,9 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A]">
-      <ResponsiveNavbar 
+      <StandardNavbar 
         title="Profile" 
         subtitle="Manage your account" 
-        showBackButton={true}
-        backUrl="/dashboard"
       />
 
       <div className="container mx-auto px-4 py-8">

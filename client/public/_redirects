@@ -1,0 +1,36 @@
+# Netlify Redirects Configuration for CryptoAlarm SPA
+# https://docs.netlify.com/routing/redirects/
+
+# SPA Fallback - Send all routes to index.html for client-side routing
+/*    /index.html   200
+
+# API Proxies (if needed in the future)
+/api/*  https://cryptoalarm.onrender.com/api/:splat  200
+
+# Legacy redirects (if migrating from old URLs)
+/old-dashboard  /dashboard  301
+/old-alerts     /alerts     301
+
+# Security redirects
+/.env*          /404.html   404
+/config/*       /404.html   404
+/.git/*         /404.html   404
+/node_modules/* /404.html   404
+
+# SEO-friendly crypto redirects
+/bitcoin        /crypto/BTC     301
+/ethereum       /crypto/ETH     301
+/binance-coin   /crypto/BNB     301
+/solana         /crypto/SOL     301
+/ripple         /crypto/XRP     301
+/cardano        /crypto/ADA     301
+/dogecoin       /crypto/DOGE    301
+/polkadot       /crypto/DOT     301
+/litecoin       /crypto/LTC     301
+
+# Force HTTPS (although Netlify does this by default)
+http://cryptoalarm.netlify.app/*  https://cryptoalarm.netlify.app/:splat  301!
+
+# Custom domain redirects (when ready)
+# http://cryptoalarm.app/*  https://cryptoalarm.app/:splat  301!
+# http://www.cryptoalarm.app/*  https://cryptoalarm.app/:splat  301!

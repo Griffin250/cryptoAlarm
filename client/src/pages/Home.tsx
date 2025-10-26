@@ -3,6 +3,7 @@ import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import { Link, useNavigate } from 'react-router-dom'
+import InstallPrompt from '../components/InstallPrompt'
 import { 
   TrendingUp, ArrowRight, Bell, Zap, Shield, Phone, 
   BarChart3, Globe, CheckCircle, Play, Pause,
@@ -206,8 +207,8 @@ const Home: React.FC = () => {
               </Link>
               <Link to="/dashboard">
                 <Button className="bg-[#3861FB] hover:bg-[#2851FB] text-white text-sm sm:text-base">
-                  <span className="hidden sm:inline">Launch Dashboard</span>
-                  <span className="sm:hidden">Dashboard</span>
+                  <span className="hidden sm:inline">Get Started</span>
+                  <span className="sm:hidden">Start</span>
                   <ArrowRight className="h-4 w-4 ml-1 sm:ml-2" />
                 </Button>
               </Link>
@@ -891,6 +892,9 @@ const Home: React.FC = () => {
           </div>
         </div>
       </footer>
+      
+      {/* PWA Install Prompt */}
+      <InstallPrompt />
     </div>
   )
 }
