@@ -1,0 +1,87 @@
+# humanstxt.org/
+# The humans responsible & technology colophon
+
+# TEAM
+    CryptoAlarm Development Team
+    Contact: team [at] cryptoalarm.app
+    Location: Global
+
+    Lead Developer
+    Contact: dev [at] cryptoalarm.app
+    From: Earth
+
+# THANKS
+    Binance API Team
+    CoinGecko Community
+    React.js Contributors
+    Vite Build Tool Team
+    Tailwind CSS Team
+    All Beta Testers
+
+# TECHNOLOGY COLOPHON
+    
+    ## Frontend
+    HTML5, CSS3, JavaScript ES6+
+    React 18.x
+    TypeScript 5.x
+    Tailwind CSS
+    Vite Build Tool
+    React Router
+    
+    ## Backend
+    Python 3.x
+    FastAPI
+    WebSocket connections
+    Binance API integration
+    Twilio Voice API
+    
+    ## Infrastructure
+    Netlify (Frontend Hosting)
+    Render.com (Backend Hosting)
+    Supabase (Database)
+    
+    ## Development Tools
+    VS Code
+    Git & GitHub
+    npm/pnpm
+    ESLint & Prettier
+    
+    ## Design
+    Figma (UI Design)
+    Adobe Creative Suite
+    Custom CSS Animations
+    
+    ## Performance
+    Lazy Loading
+    Code Splitting
+    Service Workers
+    Progressive Web App
+    
+    ## SEO & Analytics
+    OpenGraph Protocol
+    Twitter Cards
+    JSON-LD Schema
+    Google Analytics
+    
+    ## Security
+    HTTPS Everywhere
+    Content Security Policy
+    XSS Protection
+    CSRF Protection
+
+# SPECIAL THANKS
+    To the cryptocurrency community for inspiration
+    To all users who provide feedback and suggestions
+    To open source contributors worldwide
+
+                              .-.
+                           _.|  |    ┌─┐┬─┐┬ ┬┌─┐┌┬┐┌─┐╔═╗┬  ┌─┐┬─┐┌┬┐
+                         .'  |  |    │  ├┬┘└┬┘├─┘ │ │ │║ ╣│  ├─┤├┬┘│││
+                        /  / |  |    └─┘┴└─ ┴ ┴   ┴ └─┘╚═╝┴─┘┴ ┴┴└─┴ ┴
+                       |   | /  |
+                        \  |/  /     Never Miss a Crypto Move™
+                         '.|  .'
+                            '-'
+
+    Last update: 2024/12/19
+    Standards: humans.txt 1.0

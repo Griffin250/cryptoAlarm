@@ -1,0 +1,66 @@
+# Robots.txt for CryptoAlarm
+# https://cryptoalarm.netlify.app/robots.txt
+
+User-agent: *
+Allow: /
+
+# Main pages
+Allow: /dashboard
+Allow: /portfolio
+Allow: /alerts
+Allow: /profile
+Allow: /settings
+Allow: /help
+
+# Static assets
+Allow: /cryptoAlarmLogo.png
+Allow: /cryptoAlarmIcon.png
+Allow: /favicon.ico
+Allow: /manifest.json
+Allow: /browserconfig.xml
+
+# Disallow sensitive or private areas
+Disallow: /api/
+Disallow: /.env*
+Disallow: /admin/
+Disallow: /test/
+Disallow: /private/
+
+# Allow search engines to access sitemap
+Sitemap: https://cryptoalarm.netlify.app/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Specific bot instructions
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2
+
+# Social media bots
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+# Block unwanted bots
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /

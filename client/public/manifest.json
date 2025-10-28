@@ -1,0 +1,112 @@
+{
+  "name": "CryptoAlarm - Never Miss a Crypto Move",
+  "short_name": "CryptoAlarm",
+  "description": "Get instant voice call alerts when your crypto price targets are reached. Professional real-time monitoring for 20+ cryptocurrencies including Bitcoin, Ethereum, and more.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B1426",
+  "theme_color": "#3861FB",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-US",
+  "icons": [
+    {
+      "src": "/cryptoAlarmLogo.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/cryptoAlarmLogo.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/cryptoAlarmLogo.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/cryptoAlarmLogo.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/cryptoAlarmLogo.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/cryptoAlarmLogo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/cryptoAlarmLogo.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/cryptoAlarmLogo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/cryptoAlarmLogo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/cryptoAlarmLogo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["finance", "productivity", "utilities"],
+  "screenshots": [
+    {
+      "src": "/cryptoAlarmLogo.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "CryptoAlarm Dashboard"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard", 
+      "description": "View crypto dashboard",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/cryptoAlarmLogo.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Alerts",
+      "short_name": "Alerts",
+      "description": "Manage price alerts", 
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/cryptoAlarmLogo.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
+}

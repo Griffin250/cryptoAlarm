@@ -29,14 +29,14 @@ app.add_middleware(
 latest_prices = {}
 
 
-# Binance WebSocket stream - Extended coin list (20 coins)
+# Binance WebSocket stream - All 20 cryptocurrencies
 BINANCE_STREAM_URL = (
     "wss://stream.binance.com:9443/stream?"
     "streams="
-    "btcusdt@trade/ethusdt@trade/bnbusdt@trade/solusdt@trade/xrpusdt@trade/"
-    "dogeusdt@trade/adausdt@trade/shibusdt@trade/usdcusdt@trade/suiusdt@trade/pepeusdt@trade/"
-    "trxusdt@trade/linkusdt@trade/ltcusdt@trade/maticusdt@trade/bchusdt@trade/dotusdt@trade/"
-    "avaxusdt@trade/uniusdt@trade/xlmusdt@trade"
+    "btcusdt@ticker/ethusdt@ticker/bnbusdt@ticker/solusdt@ticker/xrpusdt@ticker/"
+    "dogeusdt@ticker/adausdt@ticker/shibusdt@ticker/usdcusdt@ticker/suiusdt@ticker/"
+    "pepeusdt@ticker/trxusdt@ticker/linkusdt@ticker/ltcusdt@ticker/polyusdt@ticker/"
+    "bchusdt@ticker/dotusdt@ticker/avaxusdt@ticker/uniusdt@ticker/xlmusdt@ticker"
 )
 
 async def listen_to_binance():
@@ -48,7 +48,15 @@ async def listen_to_binance():
             data = json.loads(msg)
             payload = data["data"]
             symbol = payload["s"]      # e.g. "BTCUSDT"
-            price = float(payload["p"])
+            
+            # Handle both ticker (@ticker) and trade (@trade) stream formats
+            if "c" in payload:  # Ticker stream - use close price
+                price = float(payload["c"])
+            elif "p" in payload:  # Trade stream - use trade price  
+                price = float(payload["p"])
+            else:
+                continue  # Skip if no price data
+                
             latest_prices[symbol] = price
             
             # Check for triggered alerts
