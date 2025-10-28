@@ -1,5 +1,5 @@
 import { User } from 'lucide-react';
-import type { UserProfile } from '../types';
+import type { UserProfile } from '../context/AuthContext';
 
 interface ProfileAvatarProps {
   user?: UserProfile | null;

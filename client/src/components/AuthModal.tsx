@@ -106,7 +106,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       if (mode === "login") {
         result = await signIn(formData.email, formData.password);
       } else {
-        result = await signUp(formData.email, formData.password, formData.firstName);
+        const metadata = { firstName: formData.firstName, fullName: formData.firstName };
+        result = await signUp(formData.email, formData.password, metadata);
       }
 
       if (!result.error) {
