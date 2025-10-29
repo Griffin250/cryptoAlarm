@@ -371,7 +371,7 @@ export default function Dashboard() {
                 </Button>
               </Link>
               
-              <Link to="/virtual-card">
+              <Link to="https://crypto-pass.vercel.app/">
                 <Button 
                   variant="ghost" 
                   size="sm" 
