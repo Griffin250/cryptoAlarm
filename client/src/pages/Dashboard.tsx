@@ -375,7 +375,7 @@ export default function Dashboard() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="px-3 xl:px-4 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 font-medium"
+                  className="px-3 xl:px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium"
                 >
                   <CreditCard className="h-4 w-4 mr-2" />
                   CryptoPass
@@ -512,10 +512,10 @@ export default function Dashboard() {
                     onClick={sendTestAlert}
                     disabled={loading}
                     size="sm"
-                    className="bg-gradient-to-r from-[#16C784] to-[#10A96B] hover:from-[#14B575] hover:to-[#0E8B56] text-white px-2 sm:px-3"
+                    className="bg-gradient-to-r from-[#16C784] to-[#10A96B] hover:from-[#14B575] hover:to-[#0E8B56] text-white px-1 sm:px-3"
                   >
                     <Phone className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline text-xs sm:text-sm">{loading ? "Calling..." : "Test Alert"}</span>
+                    <span className="hidden sm:inline text-xs sm:text-sm">{loading ? "Calling..." : "Test call"}</span>
                   </Button>
                 </div>
               </div>
@@ -626,8 +626,8 @@ export default function Dashboard() {
                   </Button>
                 </Link>
                 
-                <Link to="/virtual-card" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 font-medium">
+                <Link to="https://crypto-pass.vercel.app/" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-medium">
                     <CreditCard className="h-4 w-4 mr-3" />
                     CryptoPass
                   </Button>

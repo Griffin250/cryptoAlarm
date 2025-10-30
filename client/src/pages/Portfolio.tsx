@@ -2,13 +2,12 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import StandardNavbar from '../components/StandardNavbar'
-import { useAuth } from '../context/AuthContext'
 import AuthModal from '../components/AuthModal'
-import { 
+import {
   TrendingUp, Plus,
-  BarChart3, PieChart, 
+  BarChart3, PieChart,
   Calculator, Calendar, Globe, Shield,
-  Wallet
+  Wallet, Copy, Trash2, RefreshCw
 } from 'lucide-react'
 
 // Import crypto icons
@@ -140,6 +139,17 @@ const mockPortfolio: Portfolio = {
   ]
 };
 
+// Wallet types and interfaces
+interface Balance { symbol: string; balance: number }
+interface ConnectedWallet { id: number; name?: string; type?: string; address?: string; status?: string; balances?: Balance[]; icon?: string; lastSync?: string }
+
+const supportedWallets = [
+  { id: 'metamask', name: 'MetaMaskxxxx', icon: '🦊', type: 'browser', description: 'Browser extension wallet for Ethereum and EVM chains', networks: ['Ethereum'], color: '#FF6B35' },
+  { id: 'phantom', name: 'Phantom', icon: '👻', type: 'browser', description: 'Solana wallet', networks: ['Solana'], color: '#AB9FF2' },
+  { id: 'binance', name: 'Binance', icon: '🔶', type: 'exchange', description: 'Binance exchange API', networks: ['Binance'], color: '#F0B90B' },
+  { id: 'coinbase', name: 'Coinbase', icon: '🔵', type: 'mobile', description: 'Coinbase Wallet', networks: ['Ethereum'], color: '#0052FF' }
+]
+
 const mockTransactions: Transaction[] = [
   { id: 1, type: "buy", symbol: "BTC", amount: 0.5, price: 43000, date: "2024-01-15", total: 21500 },
   { id: 2, type: "buy", symbol: "ETH", amount: 3.2, price: 2750, date: "2024-01-20", total: 8800 },
@@ -230,7 +240,9 @@ const mockPerformanceData = [
 ];
 
 // Simple Chart Components
-const LineChart: React.FC<{data: any[]; title: string; color?: string}> = ({ data, title, color = "#3861FB" }) => {
+type ChartPoint = { date?: string; value: number; name?: string; percentage?: number; color?: string }
+
+const LineChart: React.FC<{data: ChartPoint[]; title: string; color?: string}> = ({ data, title, color = "#3861FB" }) => {
   const maxValue = Math.max(...data.map(d => d.value));
   const minValue = Math.min(...data.map(d => d.value));
   const range = maxValue - minValue;
@@ -262,23 +274,33 @@ const LineChart: React.FC<{data: any[]; title: string; color?: string}> = ({ dat
           ))}
           
           {/* Chart line and area */}
+          {/* Chart line and area - FIXED SVG path generation */}
           <path
-            d={`M ${data.map((point, index) => {
-              const x = (index / (data.length - 1)) * 400;
-              const y = 150 - ((point.value - minValue) / range) * 120;
-              return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
-            }).join(' ')}`}
+            d={(data.length > 0)
+              ? (() => {
+                  const points = data.map((point, index) => {
+                    const x = (index / (data.length - 1)) * 400;
+                    const y = 150 - ((point.value - minValue) / (range === 0 ? 1 : range)) * 120;
+                    return `${x} ${y}`;
+                  });
+                  return `M ${points.join(' L ')}`;
+                })()
+              : ''}
             fill="none"
             stroke={color}
             strokeWidth="2"
           />
-          
           <path
-            d={`M ${data.map((point, index) => {
-              const x = (index / (data.length - 1)) * 400;
-              const y = 150 - ((point.value - minValue) / range) * 120;
-              return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
-            }).join(' ')} L 400 150 L 0 150 Z`}
+            d={(data.length > 0)
+              ? (() => {
+                  const points = data.map((point, index) => {
+                    const x = (index / (data.length - 1)) * 400;
+                    const y = 150 - ((point.value - minValue) / (range === 0 ? 1 : range)) * 120;
+                    return `${x} ${y}`;
+                  });
+                  return `M ${points.join(' L ')} L 400 150 L 0 150 Z`;
+                })()
+              : ''}
             fill={`url(#gradient-${title})`}
           />
           
@@ -310,7 +332,9 @@ const LineChart: React.FC<{data: any[]; title: string; color?: string}> = ({ dat
   );
 };
 
-const DonutChart: React.FC<{data: any[]; title: string}> = ({ data, title }) => {
+type DonutSlice = { name: string; percentage: number; value?: number }
+
+const DonutChart: React.FC<{data: DonutSlice[]; title: string}> = ({ data, title }) => {
   let cumulativePercentage = 0;
   
   return (
@@ -357,8 +381,10 @@ const DonutChart: React.FC<{data: any[]; title: string}> = ({ data, title }) => 
   );
 };
 
-const BarChart: React.FC<{data: any[]; title: string; color?: string}> = ({ data, title, color = "#16C784" }) => {
-  const maxValue = Math.max(...data.map(d => d.value));
+type BarItem = { name: string; value: number; percentage?: number | string; color?: string }
+
+const BarChart: React.FC<{data: BarItem[]; title: string; color?: string}> = ({ data, title, color = "#16C784" }) => {
+  const maxValue = data.length ? Math.max(...data.map(d => d.value)) : 1;
   
   return (
     <div className="w-full">
@@ -391,11 +417,15 @@ const BarChart: React.FC<{data: any[]; title: string; color?: string}> = ({ data
 
 const PortfolioPage: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false)
+  // Wallet UI state
+  const [showWalletModal, setShowWalletModal] = useState(false)
+  const [selectedWalletType, setSelectedWalletType] = useState<string | null>(null)
+  const [connectedWallets, setConnectedWallets] = useState<ConnectedWallet[]>([])
   const [activeView, setActiveView] = useState<'overview' | 'holdings' | 'transactions' | 'wallets'>('overview')
   const [sortBy, setSortBy] = useState<'value' | 'pnl' | 'allocation'>('value')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   
-  const { } = useAuth()
+  // const { profile } = useAuth()
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -411,6 +441,65 @@ const PortfolioPage: React.FC = () => {
       maximumFractionDigits: decimals
     }).format(num);
   };
+
+  // Wallet helpers
+  const copyAddress = (address: string | undefined) => {
+    if (!address) return;
+    navigator.clipboard.writeText(address);
+  }
+
+  const connectWallet = async (walletType: string) => {
+    try {
+  let result: { success?: boolean; address?: string; balances?: Balance[]; message?: string } | undefined;
+      if (walletType === 'binance') {
+        const apiKey = (document.querySelector('input[placeholder="Enter your Binance API key"]') as HTMLInputElement)?.value;
+        const apiSecret = (document.querySelector('input[placeholder="Enter your Binance secret key"]') as HTMLInputElement)?.value;
+  result = await (await import('../lib/walletService')).walletService.connectBinanceWallet(apiKey, apiSecret);
+      } else if (walletType === 'phantom') {
+  result = await (await import('../lib/walletService')).walletService.connectPhantomWallet();
+      } else if (walletType === 'coinbase') {
+  result = await (await import('../lib/walletService')).walletService.connectCoinbaseWallet();
+      }
+
+      if (result?.success) {
+        setConnectedWallets(prev => [...prev, { id: Date.now(), name: walletType, address: result.address || 'connected', status: 'connected', balances: result.balances || [] }]);
+        setShowWalletModal(false);
+        setSelectedWalletType(null);
+      } else {
+        throw new Error(result?.message || 'Failed to connect');
+      }
+    } catch (err) {
+      console.error(err);
+      const message = err instanceof Error ? err.message : String(err);
+      alert(message);
+    }
+  }
+
+  const disconnectWallet = async (walletId: number) => {
+    try {
+  const res = await (await import('../lib/walletService')).walletService.disconnectWallet(walletId);
+      if (res.success) setConnectedWallets(prev => prev.filter(w => w.id !== walletId));
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  const refreshWallet = async (walletId: number) => {
+    try {
+      setConnectedWallets(prev => prev.map(w => w.id === walletId ? { ...w, status: 'syncing' } : w));
+      const wallet = connectedWallets.find(w => w.id === walletId);
+      if (!wallet) return;
+  const result = await (await import('../lib/walletService')).walletService.getWalletBalances(wallet.type || wallet.name, wallet.address);
+      if (result.success) {
+        setConnectedWallets(prev => prev.map(w => w.id === walletId ? { ...w, balances: result.balances, status: 'connected', lastSync: new Date().toLocaleTimeString() } : w));
+      } else {
+        setConnectedWallets(prev => prev.map(w => w.id === walletId ? { ...w, status: 'error' } : w));
+      }
+    } catch (err) {
+      console.error(err);
+      setConnectedWallets(prev => prev.map(w => w.id === walletId ? { ...w, status: 'error' } : w));
+    }
+  }
 
   const sortedHoldings = [...mockPortfolio.holdings].sort((a, b) => {
     const aValue = a[sortBy as keyof Holding] as number;
@@ -860,20 +949,139 @@ const PortfolioPage: React.FC = () => {
           <div className="space-y-6">
             <Card className="bg-gray-800/50 border-gray-700">
               <CardHeader>
-                <CardTitle className="text-white">Connected Wallets</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Wallet className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-white font-medium mb-2">No Wallets Connected</h3>
-                  <p className="text-gray-400 mb-6">Connect your crypto wallets to automatically track your portfolio</p>
-                  <Button className="bg-[#3861FB] hover:bg-[#2851FB] text-white">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white">Connected Wallets</CardTitle>
+                  <Button size="sm" className="bg-[#3861FB] hover:bg-[#2851FB] text-white" onClick={() => setShowWalletModal(true)}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Connect Wallet
+                    Add Wallet
                   </Button>
                 </div>
+              </CardHeader>
+
+
+
+
+
+
+
+
+
+               {/* Why Connect External Wallets Section */}
+                          <div className="m-12">
+                            <h2 className="text-white text-xl font-bold mb-6">Why Connect External Wallets?</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                              <div className="flex flex-col items-center bg-gray-800/60 rounded-lg p-6 border border-gray-700">
+                                <BarChart3 className="h-10 w-10 text-blue-400 mb-3" />
+                                <div className="text-white font-semibold text-lg mb-1">Complete Portfolio View</div>
+                                <div className="text-gray-400 text-center text-sm">Track all your crypto assets across multiple wallets and exchanges in one place.</div>
+                              </div>
+                              <div className="flex flex-col items-center bg-gray-800/60 rounded-lg p-6 border border-gray-700">
+                                
+                                <div className="text-white font-semibold text-lg mb-1">Smart Alerts</div>
+                                <div className="text-gray-400 text-center text-sm">Set alerts based on your total portfolio value across all connected wallets.</div>
+                              </div>
+                              <div className="flex flex-col items-center bg-gray-800/60 rounded-lg p-6 border border-gray-700">
+                                <Shield className="h-10 w-10 text-red-400 mb-3" />
+                                <div className="text-white font-semibold text-lg mb-1">Secure & Private</div>
+                                <div className="text-gray-400 text-center text-sm">Read-only access ensures your funds stay secure. We never store private keys.</div>
+                              </div>
+                            </div>
+                          </div>
+              <CardContent>
+                {connectedWallets.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Wallet className="h-16 w-16 text-gray-600 mx-auto mb-4" />
+                    <h3 className="text-white font-medium mb-2">No Wallets Connected</h3>
+                    <p className="text-gray-400 mb-6">Connect your crypto wallets to automatically track your portfolio</p>
+                    <Button onClick={() => setShowWalletModal(true)} className="bg-[#3861FB] hover:bg-[#2851FB] text-white">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Connect Wallet
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {connectedWallets.map((wallet) => (
+                      <div key={wallet.id} className="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg border border-gray-700">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-2xl">{wallet.icon || '🔗'}</div>
+                          <div>
+                            <div className="text-white font-semibold">{wallet.name || wallet.type}</div>
+                            <div className="text-gray-400 text-sm flex items-center space-x-2">
+                              <span>{wallet.address}</span>
+                              <button onClick={() => copyAddress(wallet.address)} className="text-gray-500 hover:text-gray-300 transition-colors"><Copy className="h-3 w-3" /></button>
+                            </div>
+                            <div className="text-gray-500 text-xs">Last sync: {wallet.lastSync || '--'}</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <div className="text-right">
+                            {wallet.balances?.map((b: Balance, i: number) => (
+                              <div key={i} className="text-white font-semibold">{formatNumber(b.balance, 4)} {b.symbol}</div>
+                            ))}
+                            <div className="flex items-center text-sm">
+                              <div className={`w-2 h-2 rounded-full mr-2 ${wallet.status === 'connected' ? 'bg-green-500' : wallet.status === 'syncing' ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                              <span className={wallet.status === 'connected' ? 'text-green-400' : wallet.status === 'syncing' ? 'text-yellow-400' : 'text-red-400'}>{wallet.status}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button variant="ghost" size="sm" onClick={() => refreshWallet(wallet.id)} className="text-gray-400 hover:text-white"><RefreshCw className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="sm" onClick={() => disconnectWallet(wallet.id)} className="text-red-400 hover:text-red-300"><Trash2 className="h-4 w-4" /></Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
+
+            {/* Add Wallet Modal */}
+            {showWalletModal && (
+              <Card className="bg-gray-800/60 border-gray-700">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-white">Connect External Wallet</CardTitle>
+                    <Button variant="ghost" size="sm" onClick={() => setShowWalletModal(false)} className="text-gray-400 hover:text-white">✕</Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {supportedWallets.map((w) => (
+                        <button key={w.id} onClick={() => setSelectedWalletType(w.id)} className={`p-4 rounded-lg border text-left transition-all hover:scale-105 ${selectedWalletType === w.id ? 'border-[#3861FB] bg-[#3861FB]/10' : 'border-gray-600 bg-gray-900/50 hover:border-gray-500'}`}>
+                          <div className="flex items-center space-x-3 mb-2">
+                            <div className="text-2xl">{w.icon}</div>
+                            <div>
+                              <div className="text-white font-semibold">{w.name}</div>
+                              <div className="text-xs rounded px-2 py-0.5" style={{ backgroundColor: `${w.color || '#444'}20`, color: w.color || '#888' }}>{w.type}</div>
+                            </div>
+                          </div>
+                          <p className="text-gray-400 text-sm mb-2">{w.description}</p>
+                        </button>
+                      ))}
+                    </div>
+
+                    {selectedWalletType && selectedWalletType === 'binance' && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-1">API Key</label>
+                          <input type="text" placeholder="Enter your Binance API key" className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-1">Secret Key</label>
+                          <input type="password" placeholder="Enter your Binance secret key" className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white" />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center space-x-3">
+                      <Button onClick={() => selectedWalletType && connectWallet(selectedWalletType)} className="bg-[#16C784] hover:bg-[#14B575] text-white">Connect Wallet</Button>
+                      <Button variant="outline" onClick={() => { setShowWalletModal(false); setSelectedWalletType(null); }} className="border-gray-600 text-gray-300">Cancel</Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
       </div>
