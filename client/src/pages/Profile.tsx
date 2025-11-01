@@ -4,23 +4,21 @@ import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Badge } from '../components/ui/badge'
 import StandardNavbar from '../components/StandardNavbar'
-import { useAuth } from '../context/AuthContext'
 import AuthModal from '../components/AuthModal'
 import { 
   User, Mail, Phone, Calendar, MapPin, Edit3, Save, X,
   Shield, Bell, Settings, Star
 } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 
 interface ProfileData {
-  first_name: string
-  last_name: string
+  full_name: string
   phone: string
   location: string
-  bio: string
   preferences: {
-    notifications: boolean
-    marketing: boolean
-    newsletter: boolean
+    email: boolean
+    sms: boolean
+    push: boolean
   }
 }
 
@@ -28,19 +26,17 @@ const ProfilePage: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState<ProfileData>({
-    first_name: '',
-    last_name: '',
+    full_name: '',
     phone: '',
     location: '',
-    bio: '',
     preferences: {
-      notifications: true,
-      marketing: false,
-      newsletter: true
+      email: true,
+      sms: false,
+      push: true
     }
   })
   
-  const { user } = useAuth()
+  const { user, profile, updateProfile, signOut } = useAuth()
 
   // Show auth modal if user is not authenticated
   useEffect(() => {
@@ -49,24 +45,21 @@ const ProfilePage: React.FC = () => {
     }
   }, [user])
 
-  // Initialize form data (in real app, this would come from API)
+  // Initialize form data from profile
   useEffect(() => {
-    if (user) {
-      // Mock data since we don't have full profile implementation yet
+    if (profile) {
       setFormData({
-        first_name: 'John',
-        last_name: 'Doe',
-        phone: '+1 (555) 123-4567',
-        location: 'New York, NY',
-        bio: 'Crypto enthusiast and active trader',
-        preferences: {
-          notifications: true,
-          marketing: false,
-          newsletter: true
+        full_name: profile.full_name || '',
+        phone: profile.phone_number || '',
+        location: profile.timezone || '',
+        preferences: profile.notification_preferences || {
+          email: true,
+          sms: false,
+          push: true
         }
       })
     }
-  }, [user])
+  }, [profile])
 
   if (!user) {
     return (
@@ -105,27 +98,30 @@ const ProfilePage: React.FC = () => {
   }
 
   const handleSaveProfile = async () => {
-    // In real app, this would call API to update profile
-    console.log('Saving profile:', formData)
-    setIsEditing(false)
-    // Simulate API call
-    // await updateProfile(formData)
+    const updates = {
+      full_name: formData.full_name,
+      phone_number: formData.phone,
+      timezone: formData.location,
+      notification_preferences: formData.preferences,
+    }
+    const result = await updateProfile(updates)
+    if (!result.error) {
+      setIsEditing(false)
+    }
   }
 
   const handleCancelEdit = () => {
     setIsEditing(false)
-    // Reset form data
-    if (user) {
+    // Reset form data to latest profile
+    if (profile) {
       setFormData({
-        first_name: 'John',
-        last_name: 'Doe',
-        phone: '+1 (555) 123-4567',
-        location: 'New York, NY',
-        bio: 'Crypto enthusiast and active trader',
-        preferences: {
-          notifications: true,
-          marketing: false,
-          newsletter: true
+        full_name: profile.full_name || '',
+        phone: profile.phone_number || '',
+        location: profile.timezone || '',
+        preferences: profile.notification_preferences || {
+          email: true,
+          sms: false,
+          push: true
         }
       })
     }
@@ -200,10 +196,7 @@ const ProfilePage: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-white font-semibold">
-                    {formData.first_name || formData.last_name 
-                      ? `${formData.first_name} ${formData.last_name}`.trim()
-                      : 'User Profile'
-                    }
+                    {formData.full_name ? formData.full_name : 'User Profile'}
                   </h3>
                   <p className="text-gray-400 text-sm">{user.email}</p>
                   <Badge className="bg-[#16C784]/20 text-[#16C784] mt-1">
@@ -216,27 +209,14 @@ const ProfilePage: React.FC = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-300">
-                    First Name
+                    Full Name
                   </label>
                   <Input
-                    value={formData.first_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                    value={formData.full_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
                     className="bg-gray-800/50 border-gray-600 text-white"
                     disabled={!isEditing}
-                    placeholder="Enter your first name"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Last Name
-                  </label>
-                  <Input
-                    value={formData.last_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
-                    className="bg-gray-800/50 border-gray-600 text-white"
-                    disabled={!isEditing}
-                    placeholder="Enter your last name"
+                    placeholder="Enter your full name"
                   />
                 </div>
 
@@ -286,18 +266,7 @@ const ProfilePage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Bio
-                  </label>
-                  <textarea
-                    value={formData.bio}
-                    onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                    className="w-full bg-gray-800/50 border border-gray-600 text-white rounded-md px-3 py-2 min-h-[80px] resize-none"
-                    disabled={!isEditing}
-                    placeholder="Tell us about yourself..."
-                  />
-                </div>
+                {/* Removed Bio field, not present in UserProfile */}
               </div>
             </CardContent>
           </Card>
@@ -378,6 +347,14 @@ const ProfilePage: React.FC = () => {
                 >
                   <Bell className="h-4 w-4 mr-3" />
                   Notification Settings
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start border-gray-600 text-red-400 hover:bg-gray-800 mt-2"
+                  onClick={async () => { await signOut(); }}
+                >
+                  <Shield className="h-4 w-4 mr-3" />
+                  Log Out
                 </Button>
               </CardContent>
             </Card>

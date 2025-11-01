@@ -21,26 +21,46 @@ export interface UserProfile {
 export interface Alert {
   id: string;
   user_id: string;
-  crypto_symbol: string;
-  alert_type: 'price_above' | 'price_below' | 'percent_change' | 'volume' | 'technical_indicator';
-  target_value: number;
-  current_value?: number;
+  name: string;
+  description?: string;
+  symbol: string;
+  exchange?: string;
+  alert_type: 'price' | 'percent_change' | 'volume' | 'technical_indicator';
   is_active: boolean;
-  is_triggered: boolean;
-  triggered_at?: string;
-  notification_method: 'phone' | 'email' | 'both';
   created_at: string;
   updated_at: string;
+  triggered_at?: string;
+  trigger_count?: number;
+  max_triggers?: number;
+  cooldown_minutes?: number;
+  is_recurring?: boolean;
+  recurring_frequency?: 'once' | 'hourly' | 'daily' | 'weekly' | 'monthly';
+  recurring_days?: number[]; // For weekly: [0,1,2,3,4,5,6] where 0=Sunday
+  recurring_time?: string; // HH:MM format for daily/weekly/monthly
+  recurring_end_date?: string; // ISO date string for when to stop recurring
 }
 
 export interface AlertCondition {
   id: string;
   alert_id: string;
-  condition_type: string;
+  condition_type: 'price_above' | 'price_below' | 'price_between' | 'percent_change_up' | 'percent_change_down' | 'volume_above' | 'volume_below' | 'rsi_above' | 'rsi_below' | 'macd_cross';
   target_value: number;
-  operator: 'greater_than' | 'less_than' | 'equal_to';
+  target_value_2?: number;
+  timeframe?: string;
+  operator?: 'AND' | 'OR';
   created_at: string;
 }
+
+export interface AlertNotification {
+  id: string;
+  alert_id: string;
+  notification_type: 'email' | 'sms' | 'push' | 'webhook';
+  destination: string;
+  is_enabled: boolean;
+  created_at: string;
+}
+
+
 
 export interface CryptoPrice {
   symbol: string;
@@ -142,10 +162,13 @@ export interface Portfolio {
 
 // Form types
 export interface AlertFormData {
-  crypto_symbol: string;
+  name?: string;
+  symbol: string;
   alert_type: Alert['alert_type'];
+  condition_type: AlertCondition['condition_type'];
   target_value: number;
-  notification_method: Alert['notification_method'];
+  notification_type: 'email' | 'sms' | 'push';
+  notification_destination: string;
 }
 
 export interface ProfileFormData {

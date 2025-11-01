@@ -84,7 +84,8 @@ interface PriceAnimations {
 }
 
 export default function Dashboard() {
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
+  // Removed isEditingProfile since it's not used
   const [prices, setPrices] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(false);
   const [alertMsg, setAlertMsg] = useState("");
@@ -104,12 +105,11 @@ export default function Dashboard() {
 
   // User menu items
   const userMenuItems = [
-    { label: 'View Profile', href: '/profile', icon: UserCircle },
-    { label: 'Edit Profile', href: '/profile/edit', icon: Edit },
-    { label: 'Settings', href: '/settings', icon: Settings },
-    { label: 'Upgrade to Premium', href: '/premium', icon: Crown },
-    { label: 'Help & Support', href: '/help', icon: HelpCircle },
-    { label: 'Sign Out', href: '/logout', icon: LogOut, isLogout: true },
+    { label: 'View Profile', action: () => window.location.href = '/profile', icon: UserCircle },
+    { label: 'Settings', action: () => window.location.href = '/settings', icon: Settings },
+    { label: 'Upgrade to Premium', action: () => window.location.href = '/premium', icon: Crown },
+    { label: 'Help & Support', action: () => window.location.href = '/help', icon: HelpCircle },
+    { label: 'Sign Out', action: async () => { await signOut(); }, icon: LogOut, isLogout: true },
   ];
   
   // Auto-refresh controls
@@ -381,7 +381,16 @@ export default function Dashboard() {
                   CryptoPass
                 </Button>
               </Link>
-              
+
+                <Link to="#">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="px-3 xl:px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium"
+                >
+                  Arbitrage bot
+                </Button>
+              </Link>
               {/* Features Dropdown */}
               <div className="relative group">
                 <Button 
@@ -390,7 +399,7 @@ export default function Dashboard() {
                   className="px-3 xl:px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium"
                 >
                   <Settings className="h-4 w-4 mr-2" />
-                  Features
+                  More
                   <svg className="ml-1 h-3 w-3 transform group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -411,17 +420,17 @@ export default function Dashboard() {
                         Settings
                       </div>
                     </Link>
-                    <Link to="/profile" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800/50 hover:text-white transition-colors">
+                    <Link to="#" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800/50 hover:text-white transition-colors">
                       <div className="flex items-center">
-                        <User className="h-4 w-4 mr-2" />
-                        Profile
+                        <Settings className="h-4 w-4 mr-2" />
+                        Community
                       </div>
                     </Link>
                     <div className="border-t border-gray-700 mt-2 pt-2">
                       <Link to="/help" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800/50 hover:text-white transition-colors">
                         <div className="flex items-center">
                           <Phone className="h-4 w-4 mr-2" />
-                          Help & Support
+                          Help Center
                         </div>
                       </Link>
                       <Link to="/coming-soon" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800/50 hover:text-white transition-colors">
@@ -538,21 +547,21 @@ export default function Dashboard() {
                     <div className="absolute right-0 top-full mt-1 w-48 bg-gray-900/95 backdrop-blur-lg border border-gray-700 rounded-lg shadow-lg z-50">
                       <div className="py-2">
                         {userMenuItems.map((item, index) => (
-                          <Link 
+                          <button
                             key={index}
-                            to={item.href} 
-                            className={`block px-4 py-2 text-sm hover:bg-gray-800/50 transition-colors ${
+                            type="button"
+                            className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-800/50 transition-colors ${
                               item.isLogout 
                                 ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10' 
                                 : 'text-gray-300 hover:text-white'
                             }`}
-                            onClick={() => setIsUserMenuOpen(false)}
+                            onClick={async () => { setIsUserMenuOpen(false); await item.action(); }}
                           >
                             <div className="flex items-center">
                               <item.icon className="h-4 w-4 mr-2" />
                               {item.label}
                             </div>
-                          </Link>
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -691,8 +700,7 @@ export default function Dashboard() {
                       <ProfileAvatar user={profile} size="sm" showOnlineStatus />
                       <div className="flex flex-col items-start">
                         <span className="text-sm font-medium text-white">
-                          {profile?.first_name || 'User'}
-                          {profile?.last_name && ` ${profile.last_name}`}
+                          {profile?.full_name || 'User'}
                         </span>
                         <span className="text-xs text-gray-400">Account & Settings</span>
                       </div>
@@ -703,23 +711,19 @@ export default function Dashboard() {
                   {isMobileAccountOpen && (
                     <div className="pl-4 space-y-1 mt-2 animate-in slide-in-from-top-1 duration-200">
                       {userMenuItems.map((item, index) => (
-                        <Link 
+                        <Button
                           key={index}
-                          to={item.href} 
-                          onClick={() => setMobileMenuOpen(false)}
+                          variant="ghost"
+                          className={`w-full justify-start py-2 ${
+                            item.isLogout 
+                              ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10' 
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                          onClick={async () => { setMobileMenuOpen(false); await item.action(); }}
                         >
-                          <Button 
-                            variant="ghost" 
-                            className={`w-full justify-start py-2 ${
-                              item.isLogout 
-                                ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10' 
-                                : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                          >
-                            <item.icon className="h-4 w-4 mr-3" />
-                            {item.label}
-                          </Button>
-                        </Link>
+                          <item.icon className="h-4 w-4 mr-3" />
+                          {item.label}
+                        </Button>
                       ))}
                     </div>
                   )}

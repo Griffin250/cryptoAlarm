@@ -1,62 +1,31 @@
-import React from 'react';
-import type { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import AuthModal from './AuthModal';
+import React from 'react'
+import { Navigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { Loader2 } from 'lucide-react'
 
 interface ProtectedRouteProps {
-  children: ReactNode;
-  redirectTo?: string;
-  showModal?: boolean;
-  fallbackComponent?: React.ComponentType;
+  children: React.ReactNode
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  children, 
-  redirectTo = '/auth',
-  showModal = false,
-  fallbackComponent: FallbackComponent
-}) => {
-  const { isAuthenticated, loading } = useAuth();
-  const location = useLocation();
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth()
 
-  // Show loading spinner while checking auth
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#3861FB]"></div>
+      <div className="min-h-screen bg-gradient-to-br from-[#0B1426] via-[#0F1837] to-[#1A1B3A] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-[#3861FB] mx-auto" />
+          <p className="text-gray-400">Loading...</p>
+        </div>
       </div>
-    );
+    )
   }
 
-  // If not authenticated, handle based on props
   if (!isAuthenticated) {
-    // Store intended destination for redirect after login
-    sessionStorage.setItem('redirectAfterAuth', location.pathname);
-    
-    if (showModal) {
-      return (
-        <>
-          <div className="blur-sm pointer-events-none">
-            {children}
-          </div>
-          <AuthModal 
-            isOpen={true} 
-            onClose={() => {}} // Prevent closing without auth
-          />
-        </>
-      );
-    }
-    
-    if (FallbackComponent) {
-      return <FallbackComponent />;
-    }
-    
-    // Default: redirect to auth page
-    return <Navigate to={redirectTo} state={{ from: location }} replace />;
+    return <Navigate to="/auth" replace />
   }
 
-  return <>{children}</>;
-};
+  return <>{children}</>
+}
 
-export default ProtectedRoute;
+export default ProtectedRoute

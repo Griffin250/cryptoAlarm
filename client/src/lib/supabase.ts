@@ -14,11 +14,11 @@ const isValidUrl = (url: string | undefined): boolean => {
   }
 }
 
-// Create a mock client when env vars are missing (both server and client side)
+// Create Supabase client or mock client when env vars are missing
 const createSupabaseClient = () => {
   if (!isValidUrl(supabaseUrl) || !supabaseAnonKey || supabaseUrl?.includes('your_supabase_project_url')) {
     // Return a mock client for both build time and runtime
-    console.warn('🔄 Running in Development Mode - Supabase credentials not configured, using mock client')
+    console.warn('⚠️ Supabase credentials not configured - using mock client')
     
     const mockClient = {
       auth: {

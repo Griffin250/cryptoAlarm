@@ -1,609 +1,333 @@
 import React, { useState, useEffect } from 'react'
-import { Bell, Plus, Trash2, AlertTriangle, Edit, Pause, Play, BarChart3, DollarSign, TrendingUp, Activity } from 'lucide-react'
-import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Badge } from './ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog'
+import { Button } from './ui/button'
 import { Input } from './ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Label } from './ui/label'
-import { AlertService } from '../lib/AlertService'
-import { useAuth } from '../context/AuthContext'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
+import { Badge } from './ui/badge'
+import { useToast } from '../hooks/use-toast'
+import { AlertService } from '../services/alertService'
+import type { Alert } from '../types'
+import { 
+  Bell, Plus, Trash2, ToggleLeft, ToggleRight, 
+  TrendingUp, TrendingDown, Loader2, AlertTriangle 
+} from 'lucide-react'
 
-interface Alert {
-  id: string
-  symbol: string
-  alert_type: 'PRICE_TARGET' | 'PERCENTAGE_CHANGE'
-  direction: 'ABOVE' | 'BELOW'
-  target_price?: number
-  percentage_change?: number
-  phone_number: string
-  status: 'ACTIVE' | 'TRIGGERED' | 'CANCELLED' | 'PAUSED'
-  created_at: string
-  triggered_at?: string
-  trigger_count: number
-  is_active: boolean
-  user_id: string
-}
-
-interface AlertStats {
-  total_alerts: number
-  active_alerts: number
-  triggered_alerts: number
-  total_triggers: number
-}
-
-interface NewAlertForm {
-  symbol: string
-  alertType: 'PRICE_TARGET' | 'PERCENTAGE_CHANGE'
-  direction: 'ABOVE' | 'BELOW'
-  targetPrice: string
-  percentageChange: string
-  phoneNumber: string
-}
-
-const cryptoSymbols = [
-  'BTC', 'ETH', 'BNB', 'ADA', 'SOL', 'XRP', 'DOT', 'DOGE', 'AVAX', 'LUNA',
-  'LINK', 'ATOM', 'LTC', 'BCH', 'FIL', 'TRX', 'ETC', 'XLM', 'VET', 'ICP',
-  'THETA', 'FTT', 'CAKE', 'ALGO', 'XTZ', 'EGLD', 'AAVE', 'GRT', 'ENJ', 'MANA'
-]
-
-export const AlertManager: React.FC = () => {
-  const { user } = useAuth()
+const AlertManager: React.FC = () => {
+  const { toast } = useToast()
   const [alerts, setAlerts] = useState<Alert[]>([])
-  const [stats, setStats] = useState<AlertStats>({
-    total_alerts: 0,
-    active_alerts: 0,
-    triggered_alerts: 0,
-    total_triggers: 0
+  const [loading, setLoading] = useState(true)
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    symbol: 'BTCUSDT',
+    target_value: '',
+    alert_type: 'price_above' as Alert['alert_type'],
+    notification_method: 'phone' as Alert['notification_method']
   })
-  const [loading, setLoading] = useState(false)
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [editingAlert, setEditingAlert] = useState<Alert | null>(null)
-  const [newAlert, setNewAlert] = useState<NewAlertForm>({
-    symbol: '',
-    alertType: 'PRICE_TARGET',
-    direction: 'ABOVE',
-    targetPrice: '',
-    percentageChange: '',
-    phoneNumber: ''
-  })
+
+  const cryptoSymbols = [
+    'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT',
+    'DOGEUSDT', 'ADAUSDT', 'SHIBUSDT', 'USDCUSDT', 'SUIUSDT'
+  ]
 
   useEffect(() => {
-    if (user) {
-      fetchAlerts()
-      loadStats()
-      
-      // Set up real-time subscription for alerts
-      const subscription = AlertService.subscribeToAlerts((payload: any) => {
-        console.log('Alert update received:', payload)
-        fetchAlerts() // Refresh alerts on any change
+    loadAlerts()
+  }, [])
+
+  const loadAlerts = async () => {
+    setLoading(true)
+    const { data, error } = await AlertService.getUserAlerts()
+    
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        variant: 'destructive'
       })
-
-      return () => {
-        if (subscription) {
-          subscription.unsubscribe()
-        }
-      }
+    } else if (data) {
+      setAlerts(data)
     }
-  }, [user])
-
-  const fetchAlerts = async () => {
-    if (!user) return
-    
-    setLoading(true)
-    try {
-      const { data, error } = await AlertService.getUserAlerts()
-      if (error) {
-        console.error('Error fetching alerts:', error)
-      } else {
-        setAlerts(data || [])
-      }
-    } catch (error) {
-      console.error('Failed to fetch alerts:', error)
-    } finally {
-      setLoading(false)
-    }
+    setLoading(false)
   }
 
-  const loadStats = async () => {
-    try {
-      const { data, error } = await AlertService.getAlertStats()
-      if (!error && data) {
-        setStats(data)
-      }
-    } catch (error) {
-      console.error('Failed to load stats:', error)
-    }
-  }
-
-  const resetForm = () => {
-    setNewAlert({
-      symbol: '',
-      alertType: 'PRICE_TARGET',
-      direction: 'ABOVE',
-      targetPrice: '',
-      percentageChange: '',
-      phoneNumber: user?.user_metadata?.phone_number || ''
-    })
-    setEditingAlert(null)
-  }
-
-  const openCreateModal = () => {
-    resetForm()
-    setShowCreateModal(true)
-  }
-
-  const openEditModal = (alert: Alert) => {
-    setNewAlert({
-      symbol: alert.symbol,
-      alertType: alert.alert_type,
-      direction: alert.direction,
-      targetPrice: alert.target_price?.toString() || '',
-      percentageChange: alert.percentage_change?.toString() || '',
-      phoneNumber: alert.phone_number
-    })
-    setEditingAlert(alert)
-    setShowCreateModal(true)
-  }
-
-  const closeModal = () => {
-    setShowCreateModal(false)
-    resetForm()
-  }
-
-  const createAlert = async () => {
-    if (!user) return
-    
-    setLoading(true)
-    try {
-      const alertData: any = {
-        symbol: newAlert.symbol,
-        alert_type: newAlert.alertType,
-        direction: newAlert.direction,
-        phone_number: newAlert.phoneNumber,
-        user_id: user.id
-      }
-
-      if (newAlert.alertType === 'PRICE_TARGET') {
-        alertData.target_price = parseFloat(newAlert.targetPrice)
-      } else {
-        alertData.percentage_change = parseFloat(newAlert.percentageChange)
-      }
-
-      const { error } = await AlertService.createAlert(alertData)
-      
-      if (error) {
-        console.error('Failed to create alert:', error)
-        return
-      }
-
-      await fetchAlerts()
-      await loadStats()
-      closeModal()
-    } catch (error) {
-      console.error('Failed to create alert:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const updateAlert = async () => {
-    if (!editingAlert || !user) return
-    
-    setLoading(true)
-    try {
-      const alertData: any = {
-        symbol: newAlert.symbol,
-        alert_type: newAlert.alertType,
-        direction: newAlert.direction,
-        phone_number: newAlert.phoneNumber
-      }
-
-      if (newAlert.alertType === 'PRICE_TARGET') {
-        alertData.target_price = parseFloat(newAlert.targetPrice)
-      } else {
-        alertData.percentage_change = parseFloat(newAlert.percentageChange)
-      }
-
-      const { error } = await AlertService.updateAlert(editingAlert.id, alertData)
-      
-      if (error) {
-        console.error('Failed to update alert:', error)
-        return
-      }
-
-      await fetchAlerts()
-      await loadStats()
-      closeModal()
-    } catch (error) {
-      console.error('Failed to update alert:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const deleteAlert = async (alertId: string) => {
-    if (window.confirm('Are you sure you want to delete this alert?')) {
-      try {
-        const { error } = await AlertService.deleteAlert(alertId)
-        if (error) {
-          console.error('Failed to delete alert:', error)
-          return
-        }
-        
-        await fetchAlerts()
-        await loadStats()
-      } catch (error) {
-        console.error('Failed to delete alert:', error)
-      }
-    }
-  }
-
-  const toggleAlertStatus = async (alertId: string, currentStatus: string) => {
-    try {
-      const newStatus = currentStatus === 'ACTIVE' ? 'PAUSED' : 'ACTIVE'
-      const { error } = await AlertService.updateAlert(alertId, { 
-        status: newStatus,
-        is_active: newStatus === 'ACTIVE'
+  const handleCreateAlert = async () => {
+    if (!formData.target_value) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a target price',
+        variant: 'destructive'
       })
-      
-      if (error) {
-        console.error('Failed to toggle alert status:', error)
-        return
-      }
-
-      await fetchAlerts()
-      await loadStats()
-    } catch (error) {
-      console.error('Failed to toggle alert status:', error)
+      return
     }
-  }
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, { text: string; className: string }> = {
-      'ACTIVE': { text: 'Active', className: 'bg-green-600 text-white hover:bg-green-700' },
-      'TRIGGERED': { text: 'Triggered', className: 'bg-red-600 text-white hover:bg-red-700' },
-      'CANCELLED': { text: 'Cancelled', className: 'bg-gray-600 text-white hover:bg-gray-700' },
-      'PAUSED': { text: 'Paused', className: 'bg-yellow-600 text-white hover:bg-yellow-700' }
-    }
-    const config = variants[status] || variants['ACTIVE']
-    return <Badge className={config.className}>{config.text}</Badge>
-  }
+    const { error } = await AlertService.createAlert({
+      name: formData.name || `${formData.symbol} Alert`,
+      symbol: formData.symbol,
+      target_value: parseFloat(formData.target_value),
+      alert_type: formData.alert_type,
+      notification_method: formData.notification_method,
+      is_active: true
+    })
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 8
-    }).format(price)
-  }
-
-  const isFormValid = () => {
-    if (!newAlert.symbol || !newAlert.phoneNumber) return false
-    
-    if (newAlert.alertType === 'PRICE_TARGET') {
-      return newAlert.targetPrice && parseFloat(newAlert.targetPrice) > 0
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        variant: 'destructive'
+      })
     } else {
-      return newAlert.percentageChange && parseFloat(newAlert.percentageChange) > 0
+      toast({
+        title: 'Success',
+        description: 'Alert created successfully'
+      })
+      setShowCreateForm(false)
+      setFormData({
+        name: '',
+        symbol: 'BTCUSDT',
+        target_value: '',
+        alert_type: 'price_above',
+        notification_method: 'phone'
+      })
+      loadAlerts()
     }
   }
 
-  if (!user) {
+  const handleToggleAlert = async (alertId: string, isActive: boolean) => {
+    const { error } = await AlertService.toggleAlertStatus(alertId, !isActive)
+    
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        variant: 'destructive'
+      })
+    } else {
+      toast({
+        title: 'Success',
+        description: `Alert ${!isActive ? 'activated' : 'deactivated'}`
+      })
+      loadAlerts()
+    }
+  }
+
+  const handleDeleteAlert = async (alertId: string) => {
+    const { error } = await AlertService.deleteAlert(alertId)
+    
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        variant: 'destructive'
+      })
+    } else {
+      toast({
+        title: 'Success',
+        description: 'Alert deleted successfully'
+      })
+      loadAlerts()
+    }
+  }
+
+  if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-gray-400">Please sign in to manage your alerts</p>
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header with Stats */}
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <Bell className="h-6 w-6 text-blue-500" />
-          <h2 className="text-2xl font-bold text-white">Alert Management</h2>
+        <div>
+          <h1 className="text-3xl font-bold text-white">Price Alerts</h1>
+          <p className="text-gray-400 mt-1">Manage your cryptocurrency price alerts</p>
         </div>
-        <Button 
-          onClick={openCreateModal}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+        <Button
+          onClick={() => setShowCreateForm(!showCreateForm)}
+          className="bg-blue-600 hover:bg-blue-700"
         >
           <Plus className="h-4 w-4 mr-2" />
           Create Alert
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-gray-700 bg-gray-800/50">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <BarChart3 className="h-5 w-5 text-blue-500" />
-              <div>
-                <p className="text-sm text-gray-400">Total Alerts</p>
-                <p className="text-2xl font-bold text-white">{stats.total_alerts}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-gray-700 bg-gray-800/50">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Activity className="h-5 w-5 text-green-500" />
-              <div>
-                <p className="text-sm text-gray-400">Active</p>
-                <p className="text-2xl font-bold text-white">{stats.active_alerts}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-gray-700 bg-gray-800/50">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="h-5 w-5 text-red-500" />
-              <div>
-                <p className="text-sm text-gray-400">Triggered</p>
-                <p className="text-2xl font-bold text-white">{stats.triggered_alerts}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-gray-700 bg-gray-800/50">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <DollarSign className="h-5 w-5 text-yellow-500" />
-              <div>
-                <p className="text-sm text-gray-400">Total Triggers</p>
-                <p className="text-2xl font-bold text-white">{stats.total_triggers}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Active Alerts */}
-      <div className="space-y-4">
-        {loading ? (
-          <div className="text-center py-8">
-            <p className="text-gray-400">Loading alerts...</p>
-          </div>
-        ) : alerts.length === 0 ? (
-          <Card className="border-gray-700 bg-gray-800/50">
-            <CardContent className="p-8 text-center">
-              <AlertTriangle className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">No Alerts Set</h3>
-              <p className="text-gray-400 mb-4">Create your first alert to get notified of price movements</p>
-              <Button 
-                onClick={openCreateModal}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Create Alert
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          alerts.map((alert) => (
-            <Card key={alert.id} className="border-gray-700 bg-gray-800/50">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <CardTitle className="text-white font-bold text-lg">
-                      {alert.symbol}
-                    </CardTitle>
-                    {getStatusBadge(alert.status)}
-                    {alert.trigger_count > 0 && (
-                      <Badge variant="outline" className="text-xs">
-                        {alert.trigger_count} triggers
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => openEditModal(alert)}
-                      className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => toggleAlertStatus(alert.id, alert.status)}
-                      className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10"
-                    >
-                      {alert.status === 'ACTIVE' ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                    </Button>
-                    <Button
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => deleteAlert(alert.id)}
-                      className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Alert Type:</span>
-                    <span className="text-white font-medium">
-                      {alert.alert_type === 'PRICE_TARGET' ? 'Price Target' : 'Percentage Change'}
-                    </span>
-                  </div>
-                  
-                  {alert.alert_type === 'PRICE_TARGET' && alert.target_price ? (
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-400">Target Price:</span>
-                      <span className="text-white font-medium">
-                        {alert.direction === 'ABOVE' ? '≥' : '≤'} {formatPrice(alert.target_price)}
-                      </span>
-                    </div>
-                  ) : alert.percentage_change ? (
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-400">Percentage Change:</span>
-                      <span className="text-white font-medium">
-                        {alert.direction === 'ABOVE' ? '+' : '-'}{alert.percentage_change}%
-                      </span>
-                    </div>
-                  ) : null}
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Phone Number:</span>
-                    <span className="text-white font-medium">{alert.phone_number}</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Created:</span>
-                    <span className="text-white font-medium">
-                      {new Date(alert.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-
-                  {alert.triggered_at && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-400">Last Triggered:</span>
-                      <span className="text-white font-medium">
-                        {new Date(alert.triggered_at).toLocaleString()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
-
-      {/* Create/Edit Alert Modal */}
-      {showCreateModal && (
-        <Dialog open={showCreateModal} onOpenChange={closeModal}>
-          <DialogContent className="sm:max-w-[425px] bg-gray-900 border-gray-700">
-            <DialogHeader>
-              <DialogTitle className="text-white">
-                {editingAlert ? 'Edit Alert' : 'Create New Alert'}
-              </DialogTitle>
-              <DialogDescription className="text-gray-400">
-                {editingAlert ? 'Update your alert settings' : 'Set up a price alert to get notified when your target is reached.'}
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="grid gap-4 py-4">
-              {/* Symbol Selection */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="symbol" className="text-right text-white">Symbol</Label>
-                <Select value={newAlert.symbol} onValueChange={(value) => setNewAlert({...newAlert, symbol: value})}>
-                  <SelectTrigger className="col-span-3 bg-gray-800 border-gray-600 text-white">
-                    <SelectValue placeholder="Select Symbol" />
+      {/* Create Alert Form */}
+      {showCreateForm && (
+        <Card className="bg-gray-800/50 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white">Create New Alert</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-gray-300">Cryptocurrency</Label>
+                <Select
+                  value={formData.symbol}
+                  onValueChange={(value) => setFormData({ ...formData, symbol: value })}
+                >
+                  <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+                    <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-600">
+                  <SelectContent>
                     {cryptoSymbols.map(symbol => (
-                      <SelectItem key={symbol} value={symbol} className="text-white hover:bg-gray-700">
-                        {symbol}
+                      <SelectItem key={symbol} value={symbol}>
+                        {symbol.replace('USDT', '')}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Alert Type */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="type" className="text-right text-white">Type</Label>
-                <Select value={newAlert.alertType} onValueChange={(value: 'PRICE_TARGET' | 'PERCENTAGE_CHANGE') => 
-                  setNewAlert({...newAlert, alertType: value})}>
-                  <SelectTrigger className="col-span-3 bg-gray-800 border-gray-600 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-600">
-                    <SelectItem value="PRICE_TARGET" className="text-white hover:bg-gray-700">Price Target</SelectItem>
-                    <SelectItem value="PERCENTAGE_CHANGE" className="text-white hover:bg-gray-700">Percentage Change</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Direction */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="direction" className="text-right text-white">Direction</Label>
-                <Select value={newAlert.direction} onValueChange={(value: 'ABOVE' | 'BELOW') => 
-                  setNewAlert({...newAlert, direction: value})}>
-                  <SelectTrigger className="col-span-3 bg-gray-800 border-gray-600 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-600">
-                    <SelectItem value="ABOVE" className="text-white hover:bg-gray-700">Above/Up</SelectItem>
-                    <SelectItem value="BELOW" className="text-white hover:bg-gray-700">Below/Down</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Target Price or Percentage */}
-              {newAlert.alertType === 'PRICE_TARGET' ? (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="price" className="text-right text-white">Price ($)</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.000001"
-                    value={newAlert.targetPrice}
-                    onChange={(e) => setNewAlert({...newAlert, targetPrice: e.target.value})}
-                    className="col-span-3 bg-gray-800 border-gray-600 text-white"
-                    placeholder="Enter target price"
-                  />
-                </div>
-              ) : (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="percentage" className="text-right text-white">Percentage (%)</Label>
-                  <Input
-                    id="percentage"
-                    type="number"
-                    step="0.1"
-                    value={newAlert.percentageChange}
-                    onChange={(e) => setNewAlert({...newAlert, percentageChange: e.target.value})}
-                    className="col-span-3 bg-gray-800 border-gray-600 text-white"
-                    placeholder="Enter percentage"
-                  />
-                </div>
-              )}
-
-              {/* Phone Number */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="phone" className="text-right text-white">Phone</Label>
+              <div className="space-y-2">
+                <Label className="text-gray-300">Target Price</Label>
                 <Input
-                  id="phone"
-                  type="tel"
-                  value={newAlert.phoneNumber}
-                  onChange={(e) => setNewAlert({...newAlert, phoneNumber: e.target.value})}
-                  className="col-span-3 bg-gray-800 border-gray-600 text-white"
-                  placeholder="+1234567890"
+                  type="number"
+                  placeholder="Enter price"
+                  value={formData.target_value}
+                  onChange={(e) => setFormData({ ...formData, target_value: e.target.value })}
+                  className="bg-gray-900 border-gray-700 text-white"
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label className="text-gray-300">Alert Type</Label>
+                <Select
+                  value={formData.alert_type}
+                  onValueChange={(value: Alert['alert_type']) => setFormData({ ...formData, alert_type: value })}
+                >
+                  <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="price_above">Price Above</SelectItem>
+                    <SelectItem value="price_below">Price Below</SelectItem>
+                    <SelectItem value="percent_change">Percent Change</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-gray-300">Notification Method</Label>
+                <Select
+                  value={formData.notification_method}
+                  onValueChange={(value: Alert['notification_method']) => setFormData({ ...formData, notification_method: value })}
+                >
+                  <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="phone">Phone Call</SelectItem>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="both">Both</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            
-            <div className="flex justify-end space-x-2">
-              <Button 
-                variant="outline" 
-                onClick={closeModal}
-                className="border-gray-600 text-gray-300 hover:bg-gray-800"
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                onClick={handleCreateAlert}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Create Alert
+              </Button>
+              <Button
+                onClick={() => setShowCreateForm(false)}
+                variant="outline"
+                className="border-gray-700 text-gray-300 hover:bg-gray-800"
               >
                 Cancel
               </Button>
-              <Button 
-                onClick={editingAlert ? updateAlert : createAlert}
-                disabled={loading || !isFormValid()}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                {loading ? (editingAlert ? 'Updating...' : 'Creating...') : (editingAlert ? 'Update Alert' : 'Create Alert')}
-              </Button>
             </div>
-          </DialogContent>
-        </Dialog>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Alerts List */}
+      {alerts.length === 0 ? (
+        <Card className="bg-gray-800/50 border-gray-700">
+          <CardContent className="py-12 text-center">
+            <Bell className="h-16 w-16 text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-white mb-2">No alerts yet</h3>
+            <p className="text-gray-400 mb-6">Create your first price alert to get started</p>
+            <Button
+              onClick={() => setShowCreateForm(true)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create First Alert
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {alerts.map((alert) => (
+            <Card key={alert.id} className="bg-gray-800/50 border-gray-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                  <div className={`p-3 rounded-full ${alert.alert_type.includes('above') ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
+                      {alert.alert_type.includes('above') ? (
+                        <TrendingUp className="h-6 w-6 text-green-500" />
+                      ) : (
+                        <TrendingDown className="h-6 w-6 text-red-500" />
+                      )}
+                    </div>
+                    
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-lg font-semibold text-white">
+                          {alert.symbol.replace('USDT', '')}
+                        </h3>
+                        <Badge variant={alert.is_active ? 'default' : 'secondary'}>
+                          {alert.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                        {alert.is_triggered && (
+                          <Badge variant="destructive">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            Triggered
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-gray-400">
+                        Alert when price {alert.alert_type.replace('_', ' ')} ${alert.target_value.toLocaleString()}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Notification: {alert.notification_method}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => handleToggleAlert(alert.id, alert.is_active)}
+                      variant="outline"
+                      size="sm"
+                      className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                    >
+                      {alert.is_active ? (
+                        <ToggleRight className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <ToggleLeft className="h-5 w-5 text-gray-500" />
+                      )}
+                    </Button>
+                    <Button
+                      onClick={() => handleDeleteAlert(alert.id)}
+                      variant="outline"
+                      size="sm"
+                      className="border-gray-700 text-red-400 hover:bg-red-950/20"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
     </div>
   )

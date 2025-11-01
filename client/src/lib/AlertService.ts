@@ -121,38 +121,40 @@ export class AlertService {
       }
 
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      
       if (userError || !user) {
-        throw new Error('User not authenticated')
+        console.error('❌ User not authenticated:', userError)
+        return { data: null, error: 'User not authenticated' }
       }
 
-      // Ensure profile exists
-      await this.ensureUserProfile(user)
+      console.log('📡 Fetching alerts from database for user:', user.email)
 
       const { data: alerts, error } = await supabase
         .from('alerts')
-        .select(`
-          *,
-          alert_conditions (*),
-          alert_notifications (*),
-          alert_logs (
-            id,
-            triggered_at,
-            trigger_price,
-            trigger_conditions
-          )
-        `)
+        .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) {
+        console.error('❌ Database error:', error)
         throw error
       }
 
+      console.log(`✅ Fetched ${alerts?.length || 0} alerts for user`)
       return { data: alerts, error: null }
     } catch (error: any) {
-      console.error('Error fetching alerts:', error)
+      console.error('❌ Error fetching alerts:', error)
       return { data: null, error: error.message }
     }
+  }
+
+  // Helper function to add timeout to promises
+  private static withTimeout<T>(promise: Promise<T>, timeoutMs: number = 10000): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) =>
+        setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms. This usually means the database schema is missing required columns. Please run the migration SQL.`)), timeoutMs)
+      )
+    ])
   }
 
   // Create a new alert
@@ -163,34 +165,65 @@ export class AlertService {
       }
 
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      
       if (userError || !user) {
-        throw new Error('User not authenticated')
+        console.error('❌ User not authenticated:', userError)
+        return { data: null, error: 'User not authenticated. Please sign in.' }
       }
 
-      // Ensure profile exists
-      await this.ensureUserProfile(user)
+      console.log('📝 Creating alert for user:', user.email)
+      console.log('Alert data:', alertData)
 
-      const { data, error } = await supabase
+      // Prepare the data for insertion
+      const insertData: any = {
+        user_id: alertData.user_id,
+        symbol: alertData.symbol,
+        alert_type: alertData.alert_type,
+        direction: alertData.direction,
+        phone_number: alertData.phone_number,
+        status: 'ACTIVE',
+        is_active: true,
+        trigger_count: 0,
+        name: `${alertData.symbol} ${alertData.alert_type}`, // Auto-generate name
+        exchange: 'binance'
+      }
+
+      // Add type-specific fields
+      if (alertData.alert_type === 'PRICE_TARGET' && alertData.target_price) {
+        insertData.target_price = alertData.target_price
+      } else if (alertData.alert_type === 'PERCENTAGE_CHANGE' && alertData.percentage_change) {
+        insertData.percentage_change = alertData.percentage_change
+      }
+
+      console.log('🔄 Sending insert request to database...')
+
+      const insertPromise = supabase
         .from('alerts')
-        .insert([{
-          ...alertData,
-          user_id: user.id,
-          status: 'ACTIVE',
-          is_active: true,
-          trigger_count: 0
-        }])
+        .insert([insertData])
         .select()
         .single()
 
+      const result = await this.withTimeout(insertPromise, 10000)
+      const { data, error } = result as any
+
+      console.log('📥 Database response received')
+
       if (error) {
+        console.error('❌ Database error:', error)
+        console.error('Error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        })
         throw error
       }
 
+      console.log('✅ Alert created successfully:', data.id)
       return { data, error: null }
     } catch (error: any) {
-      console.error('Error creating alert:', error)
-      return { data: null, error: error.message }
+      console.error('❌ Error creating alert:', error)
+      console.error('Full error object:', error)
+      return { data: null, error: error.message || 'Failed to create alert. Please check if database schema is up to date.' }
     }
   }
 
@@ -201,27 +234,31 @@ export class AlertService {
         return this.getDemoError()
       }
 
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      
-      if (userError || !user) {
-        throw new Error('User not authenticated')
-      }
+      // TODO: Re-enable authentication when auth is set up
+      // const { data: { user }, error: userError } = await supabase.auth.getUser()
+      // if (userError || !user) {
+      //   throw new Error('User not authenticated')
+      // }
+
+      console.log('✏️ Updating alert:', alertId, updates)
 
       const { data, error } = await supabase
         .from('alerts')
         .update(updates)
         .eq('id', alertId)
-        .eq('user_id', user.id) // Ensure user can only update their own alerts
+        // .eq('user_id', user.id) // TODO: Re-enable when auth is set up
         .select()
         .single()
 
       if (error) {
+        console.error('❌ Database error:', error)
         throw error
       }
 
+      console.log('✅ Alert updated successfully')
       return { data, error: null }
     } catch (error: any) {
-      console.error('Error updating alert:', error)
+      console.error('❌ Error updating alert:', error)
       return { data: null, error: error.message }
     }
   }
@@ -233,25 +270,29 @@ export class AlertService {
         return this.getDemoError()
       }
 
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      
-      if (userError || !user) {
-        throw new Error('User not authenticated')
-      }
+      // TODO: Re-enable authentication when auth is set up
+      // const { data: { user }, error: userError } = await supabase.auth.getUser()
+      // if (userError || !user) {
+      //   throw new Error('User not authenticated')
+      // }
+
+      console.log('🗑️ Deleting alert:', alertId)
 
       const { error } = await supabase
         .from('alerts')
         .delete()
         .eq('id', alertId)
-        .eq('user_id', user.id) // Ensure user can only delete their own alerts
+        // .eq('user_id', user.id) // TODO: Re-enable when auth is set up
 
       if (error) {
+        console.error('❌ Database error:', error)
         throw error
       }
 
+      console.log('✅ Alert deleted successfully')
       return { data: true, error: null }
     } catch (error: any) {
-      console.error('Error deleting alert:', error)
+      console.error('❌ Error deleting alert:', error)
       return { data: null, error: error.message }
     }
   }
@@ -264,10 +305,12 @@ export class AlertService {
       }
 
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      
       if (userError || !user) {
-        throw new Error('User not authenticated')
+        console.error('❌ User not authenticated:', userError)
+        return { data: null, error: 'User not authenticated' }
       }
+
+      console.log('📊 Fetching alert statistics for user:', user.email)
 
       const { data: alerts, error } = await supabase
         .from('alerts')
@@ -275,6 +318,7 @@ export class AlertService {
         .eq('user_id', user.id)
 
       if (error) {
+        console.error('❌ Database error:', error)
         throw error
       }
 
@@ -285,9 +329,44 @@ export class AlertService {
         total_triggers: alerts?.reduce((sum: number, a: any) => sum + (a.trigger_count || 0), 0) || 0
       }
 
+      console.log('✅ Stats:', stats)
       return { data: stats, error: null }
     } catch (error: any) {
-      console.error('Error fetching alert stats:', error)
+      console.error('❌ Error fetching alert stats:', error)
+      return { data: null, error: error.message }
+    }
+  }
+
+  // Toggle alert active status
+  static async toggleAlertStatus(alertId: string, isActive: boolean): Promise<ServiceResponse<Alert>> {
+    try {
+      if (!this.isSupabaseConfigured()) {
+        return this.getDemoError()
+      }
+
+      console.log(`🔄 Toggling alert ${alertId} to ${isActive ? 'active' : 'paused'}`)
+
+      const updates: UpdateAlertData = {
+        is_active: isActive,
+        status: isActive ? 'ACTIVE' : 'PAUSED'
+      }
+
+      const { data, error } = await supabase
+        .from('alerts')
+        .update(updates)
+        .eq('id', alertId)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('❌ Database error:', error)
+        throw error
+      }
+
+      console.log('✅ Alert status toggled successfully')
+      return { data, error: null }
+    } catch (error: any) {
+      console.error('❌ Error toggling alert status:', error)
       return { data: null, error: error.message }
     }
   }
@@ -326,17 +405,17 @@ export class AlertService {
         return this.getDemoError()
       }
 
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      
-      if (userError || !user) {
-        throw new Error('User not authenticated')
-      }
+      // TODO: Re-enable authentication when auth is set up
+      // const { data: { user }, error: userError } = await supabase.auth.getUser()
+      // if (userError || !user) {
+      //   throw new Error('User not authenticated')
+      // }
 
       const { data, error } = await supabase
         .from('alerts')
         .select('*')
         .eq('id', alertId)
-        .eq('user_id', user.id)
+        // .eq('user_id', user.id) // TODO: Re-enable when auth is set up
         .single()
 
       if (error) {

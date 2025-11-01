@@ -103,8 +103,13 @@ export class AlertService {
     }
   }
 
-  // Create new alert
-  static async createAlert(alertData: Partial<Alert>): Promise<ApiResponse<Alert>> {
+  // Create new alert with conditions and notifications
+  static async createAlert(alertData: Partial<Alert> & { 
+    condition_type?: string, 
+    target_value?: string, 
+    notification_type?: string, 
+    notification_destination?: string 
+  }): Promise<ApiResponse<Alert>> {
     try {
       if (!this.isSupabaseConfigured()) {
         return this.getDemoError();
@@ -116,17 +121,52 @@ export class AlertService {
         throw new Error('User not authenticated');
       }
 
-      const { data: alert, error } = await supabase
+      // Extract condition and notification data
+      const { condition_type, target_value, notification_type, notification_destination, ...cleanAlertData } = alertData;
+
+      // Create the alert first
+      const { data: alert, error: alertError } = await supabase
         .from('alerts')
         .insert([{
-          ...alertData,
+          ...cleanAlertData,
           user_id: user.id
         }])
         .select()
         .single();
 
-      if (error) {
-        throw error;
+      if (alertError || !alert) {
+        throw alertError || new Error('Failed to create alert');
+      }
+
+      // Create alert condition if provided
+      if (condition_type && target_value) {
+        const { error: conditionError } = await supabase
+          .from('alert_conditions')
+          .insert([{
+            alert_id: alert.id,
+            condition_type: condition_type,
+            target_value: parseFloat(target_value)
+          }]);
+
+        if (conditionError) {
+          console.error('Error creating alert condition:', conditionError);
+        }
+      }
+
+      // Create alert notification if provided
+      if (notification_type && notification_destination) {
+        const { error: notificationError } = await supabase
+          .from('alert_notifications')
+          .insert([{
+            alert_id: alert.id,
+            notification_type: notification_type,
+            destination: notification_destination,
+            is_enabled: true
+          }]);
+
+        if (notificationError) {
+          console.error('Error creating alert notification:', notificationError);
+        }
       }
 
       return { data: alert, error: null };
@@ -136,22 +176,87 @@ export class AlertService {
     }
   }
 
-  // Update alert
-  static async updateAlert(alertId: string, updates: Partial<Alert>): Promise<ApiResponse<Alert>> {
+  // Update alert with conditions and notifications
+  static async updateAlert(alertId: string, updates: Partial<Alert> & { 
+    condition_type?: string, 
+    target_value?: string, 
+    notification_type?: string, 
+    notification_destination?: string 
+  }): Promise<ApiResponse<Alert>> {
     try {
       if (!this.isSupabaseConfigured()) {
         return this.getDemoError();
       }
 
-      const { data: alert, error } = await supabase
+      // Extract condition and notification data
+      const { condition_type, target_value, notification_type, notification_destination, ...cleanUpdates } = updates;
+
+      // Update the main alert
+      const { data: alert, error: alertError } = await supabase
         .from('alerts')
-        .update(updates)
+        .update(cleanUpdates)
         .eq('id', alertId)
         .select()
         .single();
 
-      if (error) {
-        throw error;
+      if (alertError) {
+        throw alertError;
+      }
+
+      // Update alert condition if provided
+      if (condition_type && target_value) {
+        // First try to update existing condition
+        const { error: updateConditionError } = await supabase
+          .from('alert_conditions')
+          .update({
+            condition_type: condition_type,
+            target_value: parseFloat(target_value)
+          })
+          .eq('alert_id', alertId);
+
+        // If no existing condition, create a new one
+        if (updateConditionError) {
+          const { error: insertConditionError } = await supabase
+            .from('alert_conditions')
+            .insert([{
+              alert_id: alertId,
+              condition_type: condition_type,
+              target_value: parseFloat(target_value)
+            }]);
+
+          if (insertConditionError) {
+            console.error('Error creating alert condition:', insertConditionError);
+          }
+        }
+      }
+
+      // Update alert notification if provided
+      if (notification_type && notification_destination) {
+        // First try to update existing notification
+        const { error: updateNotificationError } = await supabase
+          .from('alert_notifications')
+          .update({
+            notification_type: notification_type,
+            destination: notification_destination,
+            is_enabled: true
+          })
+          .eq('alert_id', alertId);
+
+        // If no existing notification, create a new one
+        if (updateNotificationError) {
+          const { error: insertNotificationError } = await supabase
+            .from('alert_notifications')
+            .insert([{
+              alert_id: alertId,
+              notification_type: notification_type,
+              destination: notification_destination,
+              is_enabled: true
+            }]);
+
+          if (insertNotificationError) {
+            console.error('Error creating alert notification:', insertNotificationError);
+          }
+        }
       }
 
       return { data: alert, error: null };

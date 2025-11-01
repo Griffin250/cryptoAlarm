@@ -31,7 +31,13 @@ CREATE TABLE public.alerts (
   triggered_at TIMESTAMPTZ,
   trigger_count INTEGER DEFAULT 0,
   max_triggers INTEGER DEFAULT 1, -- 0 for unlimited
-  cooldown_minutes INTEGER DEFAULT 0 -- minutes before can trigger again
+  cooldown_minutes INTEGER DEFAULT 0, -- minutes before can trigger again
+  -- Recurring alert fields
+  is_recurring BOOLEAN DEFAULT false,
+  recurring_frequency TEXT CHECK (recurring_frequency IN ('once', 'hourly', 'daily', 'weekly', 'monthly')) DEFAULT 'once',
+  recurring_days INTEGER[] DEFAULT NULL, -- Array of days for weekly: [0,1,2,3,4,5,6] where 0=Sunday
+  recurring_time TIME DEFAULT NULL, -- HH:MM format for daily/weekly/monthly
+  recurring_end_date DATE DEFAULT NULL -- Date when recurring should stop
 );
 
 -- Create alert conditions table
@@ -93,6 +99,7 @@ CREATE TABLE public.price_history (
 CREATE INDEX idx_alerts_user_id ON public.alerts(user_id);
 CREATE INDEX idx_alerts_symbol ON public.alerts(symbol);
 CREATE INDEX idx_alerts_active ON public.alerts(is_active) WHERE is_active = true;
+CREATE INDEX idx_alerts_recurring ON public.alerts(is_recurring) WHERE is_recurring = true;
 CREATE INDEX idx_alert_conditions_alert_id ON public.alert_conditions(alert_id);
 CREATE INDEX idx_alert_logs_alert_id ON public.alert_logs(alert_id);
 CREATE INDEX idx_alert_logs_triggered_at ON public.alert_logs(triggered_at);

@@ -205,7 +205,7 @@ const Home: React.FC = () => {
                   <Sparkles className="h-4 w-4 animate-pulse" />
                 </Button>
               </Link>
-              <Link to="/dashboard">
+              <Link to="/auth">
                 <Button className="bg-[#3861FB] hover:bg-[#2851FB] text-white text-sm sm:text-base">
                   <span className="hidden sm:inline">Get Started</span>
                   <span className="sm:hidden">Start</span>
@@ -336,7 +336,7 @@ const Home: React.FC = () => {
                 <Button 
                   size="lg" 
                   className="bg-gradient-to-r from-[#3861FB] to-[#4F46E5] hover:from-[#2851FB] hover:to-[#3B3D94] text-white px-8 py-4 text-lg"
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => navigate('/auth')}
                 >
                   Start Monitoring
                   <TrendingUp className="h-5 w-5 ml-2" />
