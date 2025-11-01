@@ -35,6 +35,10 @@ const createSupabaseClient = () => {
           error: { message: 'Supabase not configured' } 
         }),
         signOut: () => Promise.resolve({ error: null }),
+        getSession: () => Promise.resolve({ 
+          data: { session: null }, 
+          error: null 
+        }),
         onAuthStateChange: (callback: any) => {
           // Call callback with null user immediately
           if (callback) callback('SIGNED_OUT', null)

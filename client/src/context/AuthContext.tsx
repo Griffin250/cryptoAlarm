@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import type { User, Session } from '@supabase/supabase-js/auth'
+import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 
 export interface UserProfile {
@@ -67,9 +67,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Initialize auth state
   useEffect(() => {
+    // Safety check to ensure supabase is properly initialized
+    if (!supabase || !supabase.auth) {
+      console.error('Supabase client not properly initialized')
+      setError('Authentication service unavailable')
+      setLoading(false)
+      return
+    }
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (_event: any, session: Session | null) => {
         setSession(session)
         setUser(session?.user ?? null)
         
@@ -86,16 +94,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     )
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      
-      if (session?.user) {
-        fetchProfile(session.user.id)
-      }
+    // THEN check for existing session with error handling
+    if (typeof supabase.auth.getSession === 'function') {
+      supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
+        setSession(session)
+        setUser(session?.user ?? null)
+        
+        if (session?.user) {
+          fetchProfile(session.user.id)
+        }
+        setLoading(false)
+      }).catch((error: any) => {
+        console.error('Error getting session:', error)
+        setError(error.message)
+        setLoading(false)
+      })
+    } else {
+      console.warn('getSession method not available, likely using mock client')
       setLoading(false)
-    })
+    }
 
     return () => subscription.unsubscribe()
   }, [])
