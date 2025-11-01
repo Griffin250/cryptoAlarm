@@ -1,5 +1,5 @@
 {
-  "name": "CryptoAlarm - Never Miss a Crypto Move",
+  "name": "CryptoAlarm",
   "short_name": "CryptoAlarm",
   "description": "Get instant voice call alerts when your crypto price targets are reached. Professional real-time monitoring for 20+ cryptocurrencies including Bitcoin, Ethereum, and more.",
   "start_url": "/",
