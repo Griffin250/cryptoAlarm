@@ -147,6 +147,38 @@ def get_prices():
     return {"prices": latest_prices}
 
 # Database Integration Endpoints
+@app.get("/alerts/debug")
+async def debug_alerts():
+    """Debug endpoint to show current alert status."""
+    try:
+        # Get database alerts
+        db_alerts = await supabase_client.fetch_active_alerts()
+        
+        # Get in-memory alerts
+        memory_alerts = list(alert_manager.alerts.keys())
+        memory_alert_details = {aid: {"symbol": alert.symbol, "status": alert.status.value} 
+                               for aid, alert in alert_manager.alerts.items()}
+        
+        # Check if sync is working
+        logger.info(f"🔍 Debug: Found {len(db_alerts)} DB alerts, {len(memory_alerts)} memory alerts")
+        
+        return {
+            "database_alerts": [{"id": a.get("id"), "symbol": a.get("symbol"), "name": a.get("name"), "is_active": a.get("is_active")} for a in db_alerts],
+            "memory_alerts": memory_alert_details,
+            "database_count": len(db_alerts),
+            "memory_count": len(memory_alerts),
+            "database_connected": supabase_client.is_connected(),
+            "sync_status": {
+                "last_sync": getattr(alert_manager, "last_sync_time", "never"),
+                "sync_needed": len(db_alerts) != len(memory_alerts)
+            },
+            "latest_prices_count": len(latest_prices),
+            "websocket_active": bool(latest_prices)
+        }
+    except Exception as e:
+        logger.error(f"❌ Debug alerts failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/alerts/sync", response_model=AlertSyncResponse)
 async def sync_alerts():
     """Manually trigger alert synchronization with database."""
@@ -168,10 +200,41 @@ async def sync_alerts():
 async def test_alert(alert_id: str, test_request: Optional[TestAlertRequest] = None):
     """Test an alert by triggering it manually."""
     try:
-        # Fetch alert from database
-        alert = await alert_manager.get_database_alert(alert_id)
-        if not alert:
-            raise HTTPException(status_code=404, detail="Alert not found")
+        logger.info(f"🧪 Testing alert {alert_id}")
+        
+        # First check if we have this alert in our in-memory storage
+        if alert_id in alert_manager.alerts:
+            logger.info(f"✅ Found alert {alert_id} in memory")
+            alert = alert_manager.alerts[alert_id]
+        else:
+            logger.info(f"🔍 Alert {alert_id} not in memory, checking database...")
+            # Force sync first to ensure we have latest data
+            logger.info(f"🔄 Syncing database alerts before lookup...")
+            synced_count = await alert_manager.sync_database_alerts()
+            logger.info(f"📊 Sync completed: {synced_count} alerts synced")
+            
+            # Try again after sync
+            if alert_id in alert_manager.alerts:
+                logger.info(f"✅ Found alert {alert_id} in memory after sync")
+                alert = alert_manager.alerts[alert_id]
+            else:
+                # Fetch alert from database directly
+                alert = await alert_manager.get_database_alert(alert_id)
+                if not alert:
+                    logger.warning(f"❌ Alert {alert_id} not found in database either")
+                    # Let's also check what alerts we do have
+                    all_db_alerts = await supabase_client.fetch_active_alerts()
+                    logger.info(f"📊 Database has {len(all_db_alerts)} total alerts")
+                    if all_db_alerts:
+                        alert_ids = [a.get('id', 'no-id') for a in all_db_alerts[:3]]
+                        logger.info(f"🔍 Sample alert IDs: {alert_ids}")
+                    memory_alert_ids = list(alert_manager.alerts.keys())[:3]
+                    logger.info(f"🧠 Sample memory alert IDs: {memory_alert_ids}")
+                    raise HTTPException(status_code=404, detail="Alert not found")
+                else:
+                    logger.info(f"✅ Found alert {alert_id} directly from database")
+        
+        logger.info(f"✅ Using alert: {alert.symbol} - {alert.alert_type}")
         
         # Get current price
         current_price = latest_prices.get(alert.symbol)
@@ -214,7 +277,12 @@ async def test_alert(alert_id: str, test_request: Optional[TestAlertRequest] = N
 async def get_alert_monitoring_status(alert_id: str):
     """Get monitoring status for a specific alert."""
     try:
+        # Force a sync to ensure we have latest data
+        logger.info(f"🔍 Getting status for alert {alert_id}, forcing sync first...")
+        await alert_manager.sync_database_alerts()
+        
         status_info = await alert_manager.get_monitoring_status(alert_id)
+        logger.info(f"📊 Alert {alert_id} status: {status_info}")
         
         return AlertStatusResponse(
             alert_id=alert_id,

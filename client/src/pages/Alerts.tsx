@@ -466,6 +466,14 @@ const AlertsPage: React.FC = () => {
       // Refresh alerts list
       await fetchAlerts()
       
+      // Sync with backend to ensure the new alert is in memory for testing
+      try {
+        await alertAPI.syncAlerts()
+        console.log('✅ Backend sync completed after alert creation')
+      } catch (syncError) {
+        console.warn('⚠️ Backend sync failed, but alert was created:', syncError)
+      }
+      
       // Reset form with auto-populated notification destination
       resetAlertForm('email')
       
@@ -662,6 +670,15 @@ const AlertsPage: React.FC = () => {
 
       setIsCreating(true) // Use the existing loading state
       
+      // First, sync with backend to ensure alert is in memory
+      try {
+        console.log(`🔄 Syncing backend before testing alert ${alertId}`)
+        await alertAPI.syncAlerts()
+      } catch (syncError) {
+        console.warn('⚠️ Backend sync failed before test:', syncError)
+      }
+      
+      console.log(`🧪 Testing alert ${alertId}`)
       const response = await alertAPI.testAlert(alertId)
       
       toast({
@@ -670,10 +687,10 @@ const AlertsPage: React.FC = () => {
       })
 
       // Log the response for debugging
-      console.log('Test alert response:', response)
+      console.log('✅ Test alert response:', response)
       
     } catch (error: any) {
-      console.error('Error testing alert:', error)
+      console.error('❌ Error testing alert:', error)
       toast({
         title: 'Test Failed',
         description: error.response?.data?.detail || error.message || 'Failed to send test alert. Please check your backend connection.',

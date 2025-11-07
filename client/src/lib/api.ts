@@ -55,6 +55,18 @@ export const alertAPI = {
     return response.data;
   },
 
+  // Debug endpoint to check alert synchronization
+  debugAlerts: async () => {
+    const response = await api.get('/alerts/debug');
+    return response.data;
+  },
+
+  // Check backend connectivity
+  checkBackendHealth: async () => {
+    const response = await api.get('/health');
+    return response.data;
+  },
+
   // Test notification methods
   testNotification: async (notificationData: {
     alert_id: string;

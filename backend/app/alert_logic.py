@@ -21,6 +21,7 @@ class AlertManager:
     def __init__(self):
         self.alerts: Dict[str, Alert] = {}  # In-memory alert storage
         self.last_sync: Optional[datetime] = None
+        self.last_sync_time: Optional[str] = None  # ISO format for easy serialization
         self.sync_interval = 30  # seconds
         self.crypto_names = {
             "BTCUSDT": "Bitcoin",
@@ -55,7 +56,8 @@ class AlertManager:
             self._cleanup_stale_alerts(db_alert_ids)
             
             self.last_sync = datetime.now()
-            logger.info(f"✅ Synced {len(db_alerts)} alerts from database")
+            self.last_sync_time = self.last_sync.isoformat()
+            logger.info(f"✅ Synced {len(db_alerts)} alerts from database at {self.last_sync_time}")
             return len(db_alerts)
             
         except Exception as e:
