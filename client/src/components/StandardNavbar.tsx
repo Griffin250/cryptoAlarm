@@ -52,7 +52,7 @@ const StandardNavbar: React.FC<StandardNavbarProps> = ({ title, subtitle }) => {
     { href: '/alerts', label: 'Alerts' },
     { href: '/portfolio', label: 'Portfolio' },
     { href: 'https://crypto-pass.vercel.app/', label: 'CryptoPass' },
-    { href: '#', label: 'Arbitrage bot' },
+    { href: 'https://arbitrage-bot-v1.vercel.app/', label: 'Arbitrage bot' },
   ]
 
   const dropdownItems = [

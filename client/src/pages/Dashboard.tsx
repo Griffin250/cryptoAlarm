@@ -382,7 +382,7 @@ export default function Dashboard() {
                 </Button>
               </Link>
 
-                <Link to="#">
+                <Link to="https://arbitrage-bot-v1.vercel.app/">
                 <Button 
                   variant="ghost" 
                   size="sm" 
