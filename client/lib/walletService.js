@@ -1,10 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
-import Web3 from 'web3';
 
-// Initialize providers
-let web3;
-if (typeof window !== 'undefined' && window.ethereum) {
-    web3 = new Web3(window.ethereum);
+// Dynamic import for Web3 to avoid build issues
+let Web3, web3;
+if (typeof window !== 'undefined') {
+    try {
+        // Web3 = await import('web3');
+        if (window.ethereum) {
+            // web3 = new Web3.default(window.ethereum);
+        }
+    } catch (error) {
+        console.warn('Web3 not available:', error);
+    }
 }
 
 export class WalletService {

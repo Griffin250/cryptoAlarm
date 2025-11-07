@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react'
 import StandardNavbar from '../components/StandardNavbar'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from '../components/AuthModal'
-import { api } from '../lib/api'
+import { api, alertAPI } from '../lib/api'
 import { AlertService } from '../services/alertService'
 import type { Alert, AlertCondition } from '../types'
+import AlertStatusIndicator from '../components/AlertStatusIndicator'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
@@ -427,8 +428,8 @@ const AlertsPage: React.FC = () => {
         recurring_time: newAlert.recurring_time && newAlert.recurring_time.trim() !== '' ? newAlert.recurring_time : null,
         recurring_end_date: newAlert.recurring_end_date && newAlert.recurring_end_date.trim() !== '' ? newAlert.recurring_end_date : null,
         // Include condition and notification data
-        condition_type: newAlert.alert_type === 'price' ? 'price_target' : 'percentage_change',
-        target_value: newAlert.target_price || newAlert.percentage_change,
+        condition_type: newAlert.condition_type,
+        target_value: newAlert.target_value,
         notification_type: newAlert.notification_type,
         notification_destination: newAlert.notification_destination
       }
@@ -514,20 +515,17 @@ const AlertsPage: React.FC = () => {
   const handleEditAlert = (alert: Alert) => {
     setEditingAlert(alert)
     
-    // Get existing condition and notification data from the alert
-    const existingCondition = alert.alert_conditions?.[0]
-    const existingNotification = alert.alert_notifications?.[0]
+    // For now, we'll use the alert data directly since conditions/notifications
+    // are stored separately in the database but not populated in this interface
     
     setNewAlert({
       name: alert.name || `${alert.symbol} Alert`,
       symbol: alert.symbol,
       alert_type: alert.alert_type,
-      condition_type: existingCondition?.condition_type || (alert.alert_type === 'price' ? 'price_above' : 'percentage_increase'),
-      target_price: alert.alert_type === 'price' ? existingCondition?.target_value?.toString() || '' : '',
-      percentage_change: alert.alert_type === 'percentage' ? existingCondition?.target_value?.toString() || '' : '',
-      target_value: existingCondition?.target_value?.toString() || '0',
-      notification_type: existingNotification?.notification_type || 'email',
-      notification_destination: existingNotification?.destination || profile?.email || '',
+      condition_type: 'price_above', // Default value
+      target_value: '0', // Default value
+      notification_type: 'email',
+      notification_destination: profile?.email || '',
       is_recurring: alert.is_recurring || false,
       recurring_frequency: alert.recurring_frequency || 'once',
       recurring_days: alert.recurring_days || [],
@@ -572,8 +570,8 @@ const AlertsPage: React.FC = () => {
         recurring_time: newAlert.recurring_time && newAlert.recurring_time.trim() !== '' ? newAlert.recurring_time : null,
         recurring_end_date: newAlert.recurring_end_date && newAlert.recurring_end_date.trim() !== '' ? newAlert.recurring_end_date : null,
         // Include condition and notification data
-        condition_type: newAlert.alert_type === 'price' ? 'price_target' : 'percentage_change',
-        target_value: newAlert.target_price || newAlert.percentage_change,
+        condition_type: newAlert.condition_type,
+        target_value: newAlert.target_value,
         notification_type: newAlert.notification_type,
         notification_destination: newAlert.notification_destination
       }
@@ -654,6 +652,35 @@ const AlertsPage: React.FC = () => {
         description: error.message || 'Failed to update alert status',
         variant: 'destructive'
       })
+    }
+  }
+
+  const handleTestAlert = async (alertId: string) => {
+    try {
+      const alert = alerts.find(a => a.id === alertId)
+      if (!alert) return
+
+      setIsCreating(true) // Use the existing loading state
+      
+      const response = await alertAPI.testAlert(alertId)
+      
+      toast({
+        title: 'Test Alert Sent! 📞',
+        description: `Check your phone for the test notification. Alert ID: ${alertId.slice(0, 8)}...`,
+      })
+
+      // Log the response for debugging
+      console.log('Test alert response:', response)
+      
+    } catch (error: any) {
+      console.error('Error testing alert:', error)
+      toast({
+        title: 'Test Failed',
+        description: error.response?.data?.detail || error.message || 'Failed to send test alert. Please check your backend connection.',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsCreating(false)
     }
   }
 
@@ -1620,6 +1647,16 @@ const AlertsPage: React.FC = () => {
                               </div>
                             </div>
 
+                            {/* Alert Monitoring Status */}
+                            <div className="mb-3 p-2 sm:p-3 bg-gray-700/30 rounded-lg border border-gray-600">
+                              <div className="text-xs sm:text-sm text-gray-300 mb-2 font-medium">Monitoring Status:</div>
+                              <AlertStatusIndicator 
+                                alertId={alert.id} 
+                                isActive={alert.is_active}
+                                className="w-full"
+                              />
+                            </div>
+
                             {/* Price Progress Indicator (for price alerts) */}
                             {alert.alert_type === 'price' && (alert as any).alert_conditions && (alert as any).alert_conditions[0] && (
                               <div className="mb-3 p-2 bg-gray-800/50 rounded-lg border border-gray-600">
@@ -1757,6 +1794,18 @@ const AlertsPage: React.FC = () => {
                               ) : (
                                 <Play className="h-3 w-3 sm:h-4 sm:w-4" />
                               )}
+                            </Button>
+
+                            {/* Test Alert Button */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleTestAlert(alert.id)}
+                              disabled={isCreating}
+                              className="text-blue-400 hover:text-white hover:bg-blue-500/20 p-2"
+                              title="Test Alert Notification"
+                            >
+                              <Phone className="h-3 w-3 sm:h-4 sm:w-4" />
                             </Button>
                             
                             {/* Delete Button */}

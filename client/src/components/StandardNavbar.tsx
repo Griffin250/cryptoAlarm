@@ -45,7 +45,7 @@ const StandardNavbar: React.FC<StandardNavbarProps> = ({ title, subtitle }) => {
     }
   }, [isMenuOpen])
 
-  const { isAuthenticated, profile, user, signOut, loading } = useAuth();
+  const { isAuthenticated, profile, user, signOut } = useAuth();
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard' },

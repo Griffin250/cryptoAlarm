@@ -167,6 +167,7 @@
     
     <!-- Service Worker Registration -->
     <script>
+      
       // Register Service Worker for PWA functionality
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', async () => {
@@ -211,11 +212,55 @@
         // Show custom install button or banner
         const installBanner = document.createElement('div');
         installBanner.innerHTML = `
-          <div style="position: fixed; bottom: 20px; right: 20px; background: #3861FB; color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 1000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-            <div style="margin-bottom: 10px;">Install CryptoAlarm App</div>
-            <button id="installBtn" style="background: white; color: #3861FB; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-weight: 600; margin-right: 10px;">Install</button>
-            <button id="dismissBtn" style="background: transparent; color: white; border: 1px solid white; padding: 8px 16px; border-radius: 5px; cursor: pointer;">Later</button>
-          </div>
+       <div style="
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #0d1b4c 0%, #ff4500 100%);
+  color: white;
+  padding: 16px 20px;
+  border-radius: 14px;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  width: 280px;
+  animation: fadeInUp 0.4s ease-in-out;
+">
+  <div style="margin-bottom: 12px; display: flex; align-items: center;">
+    <img src="/cryptoAlarmLogo.png" alt="CryptoAlarm Logo" 
+      style="width: 28px; height: 28px; margin-right: 10px; border-radius: 6px; background: rgba(255,255,255,0.1); padding: 4px;">
+    <span style="font-weight: 600; font-size: 15px;">Install CryptoAlarm App</span>
+  </div>
+  <div style="display: flex; justify-content: flex-end; gap: 10px;">
+    <button id="installBtn" style="
+      background: white;
+      color: #0d1b4c;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    "
+    onmouseover="this.style.background='#ff4500'; this.style.color='white';"
+    onmouseout="this.style.background='white'; this.style.color='#0d1b4c';">
+      Install
+    </button>
+    <button id="dismissBtn" style="
+      background: transparent;
+      color: white;
+      border: 1px solid rgba(255,255,255,0.8);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    "
+    onmouseover="this.style.background='rgba(255,255,255,0.1)';"
+    onmouseout="this.style.background='transparent';">
+      Later
+    </button>
+  </div>
+</div>
         `;
         document.body.appendChild(installBanner);
         
@@ -243,6 +288,18 @@
     </script>
   </head>
   <body>
+    <style>
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

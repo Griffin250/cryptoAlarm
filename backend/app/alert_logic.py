@@ -1,12 +1,27 @@
+"""
+Enhanced Alert Manager with database synchronization.
+Bridges the gap between Supabase database alerts and real-time monitoring.
+"""
 import asyncio
+import logging
 from typing import Dict, List, Optional
-from datetime import datetime
-from .models import Alert, AlertType, AlertDirection, AlertStatus, AlertTriggerEvent
-from .alerts import send_voice_alert
+from datetime import datetime, timedelta
+from .models import (
+    Alert, AlertType, AlertDirection, AlertStatus, AlertTriggerEvent, 
+    DatabaseAlert, NotificationType
+)
+from .alerts import notification_service
+from .database import supabase_client
+
+logger = logging.getLogger(__name__)
 
 class AlertManager:
+    """Enhanced Alert Manager with database synchronization capabilities."""
+    
     def __init__(self):
-        self.alerts: Dict[str, Alert] = {}
+        self.alerts: Dict[str, Alert] = {}  # In-memory alert storage
+        self.last_sync: Optional[datetime] = None
+        self.sync_interval = 30  # seconds
         self.crypto_names = {
             "BTCUSDT": "Bitcoin",
             "ETHUSDT": "Ethereum", 
@@ -20,16 +35,120 @@ class AlertManager:
             "SUIUSDT": "Sui",
             "PEPEUSDT": "Pepe"
         }
+    
+    async def sync_database_alerts(self) -> int:
+        """Sync alerts from Supabase database to memory for monitoring."""
+        try:
+            db_alerts = await supabase_client.fetch_active_alerts()
+            
+            # Clear existing database alerts and reload
+            db_alert_ids = set()
+            
+            for db_alert in db_alerts:
+                # Convert database alert to Alert model
+                alert = self._convert_db_alert_to_model(db_alert)
+                if alert:
+                    self.alerts[alert.id] = alert
+                    db_alert_ids.add(alert.id)
+            
+            # Remove alerts that are no longer in database
+            self._cleanup_stale_alerts(db_alert_ids)
+            
+            self.last_sync = datetime.now()
+            logger.info(f"✅ Synced {len(db_alerts)} alerts from database")
+            return len(db_alerts)
+            
+        except Exception as e:
+            logger.error(f"❌ Database sync failed: {e}")
+            return 0
+    
+    def _convert_db_alert_to_model(self, db_alert: Dict) -> Optional[Alert]:
+        """Convert database alert format to Alert model for monitoring."""
+        try:
+            # Extract condition data
+            conditions = db_alert.get('alert_conditions', [])
+            condition = conditions[0] if conditions else {}
+            
+            # Extract notification data
+            notifications = db_alert.get('alert_notifications', [])
+            
+            # Map database fields to Alert model
+            alert_type_map = {
+                'price': AlertType.PRICE_TARGET,
+                'percent_change': AlertType.PERCENTAGE_CHANGE,
+                'percentage': AlertType.PERCENTAGE_CHANGE,
+                'volume': AlertType.VOLUME,
+                'technical_indicator': AlertType.TECHNICAL_INDICATOR
+            }
+            
+            direction_map = {
+                'price_above': AlertDirection.ABOVE,
+                'price_below': AlertDirection.BELOW,
+                'price_between': AlertDirection.BOTH,
+                'percentage_increase': AlertDirection.ABOVE,
+                'percentage_decrease': AlertDirection.BELOW,
+                'percentage_change': AlertDirection.BOTH
+            }
+            
+            alert_type = alert_type_map.get(
+                db_alert.get('alert_type'), 
+                AlertType.PRICE_TARGET
+            )
+            
+            condition_type = condition.get('condition_type', 'price_above')
+            direction = direction_map.get(condition_type, AlertDirection.ABOVE)
+            
+            return Alert(
+                id=db_alert['id'],
+                user_id=db_alert['user_id'],
+                symbol=db_alert['symbol'].upper(),
+                alert_type=alert_type,
+                direction=direction,
+                target_value=float(condition.get('target_value', 0)),
+                status=AlertStatus.ACTIVE,
+                message=db_alert.get('description', ''),
+                created_at=datetime.fromisoformat(
+                    db_alert['created_at'].replace('Z', '+00:00') 
+                    if 'Z' in db_alert['created_at'] 
+                    else db_alert['created_at']
+                ),
+                trigger_count=db_alert.get('trigger_count', 0),
+                is_one_time=not db_alert.get('is_recurring', True),
+                notification_data=notifications
+            )
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to convert database alert: {e}")
+            return None
+    
+    def _cleanup_stale_alerts(self, current_db_alert_ids: set):
+        """Remove alerts that are no longer in the database."""
+        stale_alerts = []
+        for alert_id, alert in self.alerts.items():
+            # Only remove database alerts that are no longer active
+            if alert_id not in current_db_alert_ids and hasattr(alert, 'user_id'):
+                stale_alerts.append(alert_id)
+        
+        for alert_id in stale_alerts:
+            del self.alerts[alert_id]
+            logger.info(f"🗑️ Removed stale alert: {alert_id}")
 
     def create_alert(self, alert: Alert) -> Alert:
-        """Create a new alert"""
+        """Create a new alert (for in-memory alerts)"""
         self.alerts[alert.id] = alert
-        print(f"✅ Alert created: {alert.symbol} {alert.alert_type.value} {alert.direction.value} {alert.target_value}")
+        logger.info(f"✅ Alert created: {alert.symbol} {alert.alert_type.value} {alert.direction.value} {alert.target_value}")
         return alert
 
     def get_alert(self, alert_id: str) -> Optional[Alert]:
         """Get a specific alert by ID"""
         return self.alerts.get(alert_id)
+    
+    async def get_database_alert(self, alert_id: str) -> Optional[Alert]:
+        """Get a specific alert from database and convert to model."""
+        db_alert = await supabase_client.get_alert_by_id(alert_id)
+        if db_alert:
+            return self._convert_db_alert_to_model(db_alert)
+        return None
 
     def get_all_alerts(self, user_id: str = "default_user", status: Optional[AlertStatus] = None) -> List[Alert]:
         """Get all alerts for a user, optionally filtered by status"""
@@ -56,19 +175,22 @@ class AlertManager:
             return True
         return False
 
-    def check_alert_conditions(self, symbol: str, current_price: float) -> List[AlertTriggerEvent]:
-        """Check if any alerts should be triggered for a given symbol and price"""
+    async def check_alert_conditions(self, symbol: str, current_price: float) -> List[AlertTriggerEvent]:
+        """Enhanced alert checking with database sync and notification support."""
+        # Sync database alerts periodically
+        if (not self.last_sync or 
+            (datetime.now() - self.last_sync).seconds > self.sync_interval):
+            await self.sync_database_alerts()
+        
         triggered_events = []
         
         for alert in self.alerts.values():
-            if (alert.symbol == symbol and 
+            if (alert.symbol.upper() == symbol.upper() and 
                 alert.status == AlertStatus.ACTIVE and 
                 self._should_trigger_alert(alert, current_price)):
                 
-                # Mark alert as triggered
-                alert.status = AlertStatus.TRIGGERED
-                alert.triggered_at = datetime.now()
-                alert.current_price = current_price
+                # Handle alert trigger in database
+                await self._handle_alert_trigger(alert, current_price)
                 
                 # Create trigger event
                 message = self._generate_alert_message(alert, current_price)
@@ -80,13 +202,53 @@ class AlertManager:
                     alert_type=alert.alert_type,
                     direction=alert.direction,
                     message=message,
-                    triggered_at=datetime.now()
+                    triggered_at=datetime.now(),
+                    notification_data=getattr(alert, 'notification_data', [])
                 )
                 
                 triggered_events.append(trigger_event)
-                print(f"🚨 Alert triggered: {message}")
+                logger.info(f"🚨 Alert triggered: {message}")
         
         return triggered_events
+    
+    async def _handle_alert_trigger(self, alert: Alert, current_price: float) -> None:
+        """Handle alert trigger in database and update status."""
+        try:
+            # Update alert status in memory
+            alert.status = AlertStatus.TRIGGERED
+            alert.triggered_at = datetime.now()
+            alert.current_price = current_price
+            alert.trigger_count += 1
+            
+            # Update alert status in database
+            status_data = {
+                'triggered_at': datetime.now().isoformat(),
+                'trigger_count': alert.trigger_count,
+                'last_trigger_price': current_price,
+                'is_active': not alert.is_one_time  # Deactivate if one-time alert
+            }
+            
+            await supabase_client.update_alert_status(alert.id, status_data)
+            
+            # Create detailed trigger log
+            trigger_data = {
+                'trigger_price': current_price,
+                'conditions': {
+                    'symbol': alert.symbol,
+                    'target_value': alert.target_value,
+                    'alert_type': alert.alert_type.value,
+                    'direction': alert.direction.value
+                },
+                'market_data': {
+                    'current_price': current_price,
+                    'timestamp': datetime.now().isoformat()
+                }
+            }
+            
+            await supabase_client.create_alert_log_entry(alert.id, trigger_data)
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to handle alert trigger for {alert.id}: {e}")
 
     def _should_trigger_alert(self, alert: Alert, current_price: float) -> bool:
         """Determine if an alert should be triggered based on current price"""
@@ -142,13 +304,15 @@ class AlertManager:
         
         return f"CryptoAlarm Alert! {crypto_name} target reached at ${current_price:,.2f}."
 
-    async def trigger_voice_alert(self, trigger_event: AlertTriggerEvent):
-        """Send voice alert for triggered event"""
+    async def send_notifications_for_trigger(self, trigger_event: AlertTriggerEvent) -> List[Dict]:
+        """Send notifications for a triggered alert."""
         try:
-            send_voice_alert(trigger_event.message)
-            print(f"📞 Voice alert sent for {trigger_event.symbol}: {trigger_event.message}")
+            results = await notification_service.send_notifications(trigger_event)
+            logger.info(f"� Sent {len(results)} notifications for alert {trigger_event.alert_id}")
+            return results
         except Exception as e:
-            print(f"❌ Failed to send voice alert: {e}")
+            logger.error(f"❌ Failed to send notifications for alert {trigger_event.alert_id}: {e}")
+            return []
 
     def get_alert_stats(self) -> Dict:
         """Get statistics about alerts"""
@@ -160,7 +324,21 @@ class AlertManager:
             "total_alerts": total_alerts,
             "active_alerts": active_alerts,
             "triggered_alerts": triggered_alerts,
-            "paused_alerts": total_alerts - active_alerts - triggered_alerts
+            "paused_alerts": total_alerts - active_alerts - triggered_alerts,
+            "last_sync": self.last_sync.isoformat() if self.last_sync else None,
+            "database_connected": supabase_client.is_connected()
+        }
+    
+    async def get_monitoring_status(self, alert_id: str) -> Dict:
+        """Get monitoring status for a specific alert."""
+        alert = self.get_alert(alert_id)
+        return {
+            "alert_id": alert_id,
+            "is_active": alert.status == AlertStatus.ACTIVE if alert else False,
+            "is_monitored": alert_id in self.alerts,
+            "last_checked": alert.last_checked.isoformat() if alert and alert.last_checked else None,
+            "trigger_count": alert.trigger_count if alert else 0,
+            "status": alert.status.value if alert else "not_found"
         }
 
 # Global alert manager instance

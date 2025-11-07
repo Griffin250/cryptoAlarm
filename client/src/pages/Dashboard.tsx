@@ -37,9 +37,9 @@ import ProfileAvatar from "../components/ProfileAvatar";
 import { useAuth } from "../context/AuthContext";
 import { 
   Phone, Wifi, WifiOff, Star, 
-  Settings, Bell, User, Search, Menu, BarChart3, 
+  Settings, Bell, Search, Menu, BarChart3, 
   Globe, RefreshCw, CreditCard, ChevronDown, 
-  UserCircle, Edit, Crown, HelpCircle, LogOut
+  UserCircle, Crown, HelpCircle, LogOut
 } from "lucide-react";
 
 // Crypto info mapping - Extended list

@@ -477,6 +477,7 @@ const CryptoDetail: React.FC = () => {
                     </div>
                   ) : (chartType === 'line' ? cryptoData.priceHistory.length > 1 : cryptoData.candlestickData.length > 1) ? (
                     <PriceChart 
+                      symbol={cryptoData.symbol}
                       data={chartType === 'line' ? cryptoData.priceHistory : cryptoData.candlestickData}
                       height={320}
                       color={cryptoData.change24h >= 0 ? '#10B981' : '#EF4444'}
@@ -897,6 +898,7 @@ const CryptoDetail: React.FC = () => {
                 </div>
               ) : (chartType === 'line' ? cryptoData.priceHistory.length > 1 : cryptoData.candlestickData.length > 1) ? (
                 <PriceChart 
+                  symbol={cryptoData.symbol}
                   data={chartType === 'line' ? cryptoData.priceHistory : cryptoData.candlestickData}
                   height={Math.min(window.innerHeight * 0.8, 800)}
                   color={cryptoData.change24h >= 0 ? '#10B981' : '#EF4444'}

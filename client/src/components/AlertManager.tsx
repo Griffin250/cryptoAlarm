@@ -22,8 +22,8 @@ const AlertManager: React.FC = () => {
     name: '',
     symbol: 'BTCUSDT',
     target_value: '',
-    alert_type: 'price_above' as Alert['alert_type'],
-    notification_method: 'phone' as Alert['notification_method']
+    alert_type: 'price' as Alert['alert_type'],
+    notification_method: 'email'
   })
 
   const cryptoSymbols = [
@@ -64,9 +64,9 @@ const AlertManager: React.FC = () => {
     const { error } = await AlertService.createAlert({
       name: formData.name || `${formData.symbol} Alert`,
       symbol: formData.symbol,
-      target_value: parseFloat(formData.target_value),
+      target_value: formData.target_value,
       alert_type: formData.alert_type,
-      notification_method: formData.notification_method,
+      notification_type: formData.notification_method,
       is_active: true
     })
 
@@ -86,8 +86,8 @@ const AlertManager: React.FC = () => {
         name: '',
         symbol: 'BTCUSDT',
         target_value: '',
-        alert_type: 'price_above',
-        notification_method: 'phone'
+        alert_type: 'price',
+        notification_method: 'email'
       })
       loadAlerts()
     }
@@ -213,7 +213,7 @@ const AlertManager: React.FC = () => {
                 <Label className="text-gray-300">Notification Method</Label>
                 <Select
                   value={formData.notification_method}
-                  onValueChange={(value: Alert['notification_method']) => setFormData({ ...formData, notification_method: value })}
+                  onValueChange={(value: string) => setFormData({ ...formData, notification_method: value })}
                 >
                   <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
                     <SelectValue />
@@ -285,18 +285,18 @@ const AlertManager: React.FC = () => {
                         <Badge variant={alert.is_active ? 'default' : 'secondary'}>
                           {alert.is_active ? 'Active' : 'Inactive'}
                         </Badge>
-                        {alert.is_triggered && (
-                          <Badge variant="destructive">
+                        {alert.triggered_at && (
+                          <Badge variant="destructive" className="text-xs">
                             <AlertTriangle className="h-3 w-3 mr-1" />
                             Triggered
                           </Badge>
                         )}
                       </div>
                       <p className="text-gray-400">
-                        Alert when price {alert.alert_type.replace('_', ' ')} ${alert.target_value.toLocaleString()}
+                        {alert.name || `${alert.symbol} Alert`}
                       </p>
                       <p className="text-sm text-gray-500 mt-1">
-                        Notification: {alert.notification_method}
+                        Type: {alert.alert_type}
                       </p>
                     </div>
                   </div>

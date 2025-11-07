@@ -25,8 +25,8 @@ export function ProfileAvatar({
   const getUserInitials = (user: UserProfile | null | undefined): string => {
     if (!user) return 'U';
     
-    const firstName = user.first_name?.trim();
-    const lastName = user.last_name?.trim();
+    const firstName = (user as any).first_name?.trim();
+    const lastName = (user as any).last_name?.trim();
     
     if (firstName && lastName) {
       return `${firstName.charAt(0).toUpperCase()}${lastName.charAt(0).toUpperCase()}`;
@@ -46,12 +46,12 @@ export function ProfileAvatar({
       {user?.avatar_url ? (
         <img
           src={user.avatar_url}
-          alt={`${user.first_name || 'User'}'s avatar`}
+          alt={`${(user as any).first_name || 'User'}'s avatar`}
           className={`${sizeClasses[size]} rounded-full object-cover border-2 border-gray-600 hover:border-gray-400 transition-colors`}
         />
       ) : (
         <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[#3861FB] to-[#4F46E5] flex items-center justify-center text-white font-medium border-2 border-gray-600 hover:border-gray-400 transition-colors`}>
-          {user?.first_name ? initials : <User className="w-1/2 h-1/2" />}
+          {(user as any)?.first_name ? initials : <User className="w-1/2 h-1/2" />}
         </div>
       )}
       

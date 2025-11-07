@@ -3,7 +3,7 @@ import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import { Link, useNavigate } from 'react-router-dom'
-import InstallPrompt from '../components/InstallPrompt'
+//import InstallPrompt from '../components/InstallPrompt'
 import { 
   TrendingUp, ArrowRight, Bell, Zap, Shield, Phone, 
   BarChart3, Globe, CheckCircle, Play, Pause,
@@ -893,8 +893,10 @@ const Home: React.FC = () => {
         </div>
       </footer>
       
-      {/* PWA Install Prompt */}
-      <InstallPrompt />
+      {/* PWA Install Prompt 
+       <InstallPrompt />
+      */}
+     
     </div>
   )
 }
