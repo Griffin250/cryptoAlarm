@@ -173,7 +173,13 @@ async def debug_alerts():
                 "sync_needed": len(db_alerts) != len(memory_alerts)
             },
             "latest_prices_count": len(latest_prices),
-            "websocket_active": bool(latest_prices)
+            "websocket_active": bool(latest_prices),
+            "price_symbols": list(latest_prices.keys())[:10],  # Show first 10 price symbols
+            "symbol_mapping_sample": {
+                "SOL": alert_manager.get_trading_pair("SOL"),
+                "BTC": alert_manager.get_trading_pair("BTC"),
+                "ETH": alert_manager.get_trading_pair("ETH")
+            }
         }
     except Exception as e:
         logger.error(f"❌ Debug alerts failed: {e}")
@@ -236,10 +242,18 @@ async def test_alert(alert_id: str, test_request: Optional[TestAlertRequest] = N
         
         logger.info(f"✅ Using alert: {alert.symbol} - {alert.alert_type}")
         
-        # Get current price
-        current_price = latest_prices.get(alert.symbol)
+        # Convert symbol to trading pair for price lookup
+        trading_pair = alert_manager.get_trading_pair(alert.symbol)
+        logger.info(f"🔄 Converting symbol '{alert.symbol}' to trading pair '{trading_pair}' for price lookup")
+        
+        # Get current price using trading pair
+        current_price = latest_prices.get(trading_pair)
         if not current_price:
-            raise HTTPException(status_code=400, detail=f"No price data for {alert.symbol}")
+            logger.warning(f"❌ No price data for trading pair '{trading_pair}' (symbol: {alert.symbol})")
+            logger.info(f"📊 Available price data: {list(latest_prices.keys())[:10]}...")  # Show first 10
+            raise HTTPException(status_code=400, detail=f"No price data for {alert.symbol} ({trading_pair})")
+        
+        logger.info(f"💰 Current price for {trading_pair}: ${current_price:,.4f}")
         
         # Create test trigger event
         test_message = (test_request.message if test_request and test_request.message 

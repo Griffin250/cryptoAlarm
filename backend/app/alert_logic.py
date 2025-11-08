@@ -23,6 +23,29 @@ class AlertManager:
         self.last_sync: Optional[datetime] = None
         self.last_sync_time: Optional[str] = None  # ISO format for easy serialization
         self.sync_interval = 30  # seconds
+        # Symbol mapping for crypto symbols to trading pairs
+        self.symbol_to_pair = {
+            "BTC": "BTCUSDT",
+            "ETH": "ETHUSDT", 
+            "BNB": "BNBUSDT",
+            "SOL": "SOLUSDT",
+            "XRP": "XRPUSDT",
+            "DOGE": "DOGEUSDT",
+            "ADA": "ADAUSDT",
+            "SHIB": "SHIBUSDT",
+            "USDC": "USDCUSDT",
+            "SUI": "SUIUSDT",
+            "PEPE": "PEPEUSDT",
+            "TRX": "TRXUSDT",
+            "LINK": "LINKUSDT",
+            "LTC": "LTCUSDT",
+            "POL": "POLYUSDT",
+            "BCH": "BCHUSDT",
+            "DOT": "DOTUSDT",
+            "AVAX": "AVAXUSDT",
+            "UNI": "UNIUSDT",
+            "XLM": "XLMUSDT"
+        }
         self.crypto_names = {
             "BTCUSDT": "Bitcoin",
             "ETHUSDT": "Ethereum", 
@@ -36,6 +59,22 @@ class AlertManager:
             "SUIUSDT": "Sui",
             "PEPEUSDT": "Pepe"
         }
+        logger.info("🔧 AlertManager initialized with symbol mapping")
+    
+    def get_trading_pair(self, symbol: str) -> str:
+        """Convert crypto symbol to trading pair for price lookup."""
+        symbol = symbol.upper()
+        # If already a trading pair, return as-is
+        if symbol.endswith("USDT"):
+            return symbol
+        # Convert crypto symbol to trading pair
+        return self.symbol_to_pair.get(symbol, f"{symbol}USDT")
+    
+    def get_crypto_symbol(self, pair: str) -> str:
+        """Convert trading pair back to crypto symbol."""
+        if pair.endswith("USDT"):
+            return pair[:-4]  # Remove "USDT" suffix
+        return pair
     
     async def sync_database_alerts(self) -> int:
         """Sync alerts from Supabase database to memory for monitoring."""
@@ -186,8 +225,18 @@ class AlertManager:
         
         triggered_events = []
         
+        # Convert trading pair to crypto symbol for comparison
+        # WebSocket gives us "SOLUSDT", alerts are stored as "SOL"
+        crypto_symbol = self.get_crypto_symbol(symbol)
+        
         for alert in self.alerts.values():
-            if (alert.symbol.upper() == symbol.upper() and 
+            # Check if alert symbol matches (either direct or after conversion)
+            alert_matches = (
+                alert.symbol.upper() == symbol.upper() or  # Direct match (SOLUSDT == SOLUSDT)
+                alert.symbol.upper() == crypto_symbol.upper()  # Crypto symbol match (SOL == SOL)
+            )
+            
+            if (alert_matches and 
                 alert.status == AlertStatus.ACTIVE and 
                 self._should_trigger_alert(alert, current_price)):
                 
