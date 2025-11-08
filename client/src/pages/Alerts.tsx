@@ -17,7 +17,7 @@ import { useToast } from '../hooks/use-toast'
 import { 
   Bell, Lock, Shield, Plus, Trash2, Edit2, Phone, 
   TrendingUp, TrendingDown, Percent, CheckCircle,
-  BarChart3, Clock, Volume2, Eye, Activity, Pause, Play
+  BarChart3, Clock, Volume2, Eye, Activity, Pause, Play, RotateCcw
 } from 'lucide-react'
 
 // Import crypto icons
@@ -65,14 +65,20 @@ const AlertsPage: React.FC = () => {
   const { isAuthenticated, loading, profile } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [alerts, setAlerts] = useState<Alert[]>([])
+  const [historyAlerts, setHistoryAlerts] = useState<Alert[]>([])
   const [newAlert, setNewAlert] = useState({
     name: '',
     symbol: '',
     alert_type: 'price' as Alert['alert_type'],
     condition_type: 'price_above' as AlertCondition['condition_type'],
     target_value: '',
-    notification_type: 'email' as 'email' | 'sms' | 'push',
+    target_value_2: '',
+    timeframe: '1h',
+    notification_type: 'voice' as 'voice' | 'email' | 'sms' | 'push',
     notification_destination: '',
+    description: '',
+    max_triggers: '1',
+    cooldown_minutes: '0',
     is_recurring: false,
     recurring_frequency: 'once' as Alert['recurring_frequency'],
     recurring_days: [] as number[],
@@ -185,7 +191,18 @@ const AlertsPage: React.FC = () => {
           variant: 'destructive'
         })
       } else {
-        setAlerts(response.data || [])
+        const allAlerts = response.data || []
+        
+        // Separate active alerts from triggered/history alerts
+        const activeAlerts = allAlerts.filter(alert => 
+          alert.is_active && !alert.triggered_at
+        )
+        const triggeredAlerts = allAlerts.filter(alert => 
+          !alert.is_active || alert.triggered_at
+        )
+        
+        setAlerts(activeAlerts)
+        setHistoryAlerts(triggeredAlerts)
       }
     } catch (error) {
       console.error('Error fetching alerts:', error)
@@ -230,6 +247,8 @@ const AlertsPage: React.FC = () => {
     
     const currentDestination = newAlert.notification_destination
     switch (newAlert.notification_type) {
+      case 'voice':
+        return currentDestination === profile.phone_number
       case 'email':
         return currentDestination === profile.email
       case 'sms':
@@ -242,14 +261,16 @@ const AlertsPage: React.FC = () => {
   }
 
   // Helper function to get default notification destination from profile
-  const getDefaultNotificationDestination = (type: 'email' | 'sms' | 'push') => {
+  const getDefaultNotificationDestination = (type: 'voice' | 'email' | 'sms' | 'push') => {
     if (!profile) return ''
     
     switch (type) {
+      case 'voice':
+        return profile.phone_number || '' // Use phone for voice calls
       case 'email':
         return profile.email || ''
       case 'sms':
-        return profile.phone_number || ''
+        return profile.phone_number || '' // Use phone for SMS
       case 'push':
         return profile.id || '' // Use user ID for push notifications
       default:
@@ -258,7 +279,7 @@ const AlertsPage: React.FC = () => {
   }
 
   // Helper function to reset alert form with auto-populated notification destination
-  const resetAlertForm = (notificationType: 'email' | 'sms' | 'push' = 'email') => {
+  const resetAlertForm = (notificationType: 'voice' | 'email' | 'sms' | 'push' = 'voice') => {
     const defaultDestination = getDefaultNotificationDestination(notificationType)
     
     setNewAlert({
@@ -267,8 +288,13 @@ const AlertsPage: React.FC = () => {
       alert_type: 'price',
       condition_type: 'price_above',
       target_value: '',
+      target_value_2: '',
+      timeframe: '1h',
       notification_type: notificationType,
       notification_destination: defaultDestination,
+      description: '',
+      max_triggers: '1',
+      cooldown_minutes: '0',
       is_recurring: false,
       recurring_frequency: 'once',
       recurring_days: [],
@@ -475,7 +501,7 @@ const AlertsPage: React.FC = () => {
       }
       
       // Reset form with auto-populated notification destination
-      resetAlertForm('email')
+      resetAlertForm('voice')
       
       toast({
         title: 'Alert Created!',
@@ -532,8 +558,13 @@ const AlertsPage: React.FC = () => {
       alert_type: alert.alert_type,
       condition_type: 'price_above', // Default value
       target_value: '0', // Default value
-      notification_type: 'email',
-      notification_destination: profile?.email || '',
+      target_value_2: '',
+      timeframe: '1h',
+      notification_type: 'voice',
+      notification_destination: profile?.phone_number || '',
+      description: alert.description || '',
+      max_triggers: alert.max_triggers?.toString() || '1',
+      cooldown_minutes: alert.cooldown_minutes?.toString() || '0',
       is_recurring: alert.is_recurring || false,
       recurring_frequency: alert.recurring_frequency || 'once',
       recurring_days: alert.recurring_days || [],
@@ -551,7 +582,7 @@ const AlertsPage: React.FC = () => {
   const handleCancelEdit = () => {
     setEditingAlert(null)
     setIsEditing(false)
-    resetAlertForm('email')
+    resetAlertForm('voice')
     toast({
       title: 'Edit Cancelled',
       description: 'Alert editing has been cancelled.',
@@ -698,6 +729,96 @@ const AlertsPage: React.FC = () => {
       })
     } finally {
       setIsCreating(false)
+    }
+  }
+
+  // Function to move triggered alerts to history
+  const moveAlertToHistory = async (alertId: string) => {
+    try {
+      const alert = alerts.find(a => a.id === alertId)
+      if (!alert) return
+
+      // Update the alert to mark it as triggered/inactive
+      const updateData = {
+        is_active: false,
+        triggered_at: new Date().toISOString()
+      }
+
+      const response = await AlertService.updateAlert(alertId, updateData)
+      
+      if (response.error) {
+        console.error('Error moving alert to history:', response.error)
+        return
+      }
+
+      // Move alert from active to history in local state
+      setAlerts(prev => prev.filter(a => a.id !== alertId))
+      setHistoryAlerts(prev => [{ ...alert, ...updateData }, ...prev])
+
+      toast({
+        title: 'Alert Triggered',
+        description: `Alert "${alert.name}" has been moved to history.`,
+      })
+
+      // If it's a recurring alert, create a new active instance
+      if (alert.is_recurring && alert.recurring_frequency !== 'once') {
+        await handleRecurringAlert(alert)
+      }
+      
+    } catch (error: any) {
+      console.error('Error moving alert to history:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to move alert to history',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  // Function to handle recurring alerts
+  const handleRecurringAlert = async (triggeredAlert: any) => {
+    try {
+      // Create a new alert instance for the next occurrence
+      const newAlertData = {
+        name: triggeredAlert.name,
+        symbol: triggeredAlert.symbol,
+        alert_type: triggeredAlert.alert_type,
+        description: triggeredAlert.description,
+        exchange: triggeredAlert.exchange,
+        is_recurring: true,
+        recurring_frequency: triggeredAlert.recurring_frequency,
+        recurring_days: triggeredAlert.recurring_days,
+        recurring_time: triggeredAlert.recurring_time,
+        recurring_end_date: triggeredAlert.recurring_end_date,
+        max_triggers: triggeredAlert.max_triggers,
+        cooldown_minutes: triggeredAlert.cooldown_minutes,
+        // Include condition and notification data
+        condition_type: triggeredAlert.alert_conditions?.[0]?.condition_type || 'price_above',
+        target_value: triggeredAlert.alert_conditions?.[0]?.target_value?.toString() || '0',
+        notification_type: triggeredAlert.alert_notifications?.[0]?.notification_type || 'voice',
+        notification_destination: triggeredAlert.alert_notifications?.[0]?.destination || ''
+      }
+
+      // Create the new recurring alert
+      const response = await AlertService.createAlert(newAlertData)
+      
+      if (!response.error) {
+        // Refresh alerts to show the new recurring instance
+        await fetchAlerts()
+        
+        toast({
+          title: 'Recurring Alert Created',
+          description: `A new instance of "${triggeredAlert.name}" has been created for the next occurrence.`,
+        })
+      }
+      
+    } catch (error: any) {
+      console.error('Error creating recurring alert:', error)
+      toast({
+        title: 'Warning',
+        description: 'Alert was triggered but failed to create next recurring instance.',
+        variant: 'destructive'
+      })
     }
   }
 
@@ -1212,12 +1333,18 @@ const AlertsPage: React.FC = () => {
                       <Label className="text-white font-medium">Notification Type</Label>
                       <Select
                         value={newAlert.notification_type}
-                        onValueChange={(value) => setNewAlert(prev => ({ ...prev, notification_type: value as 'email' | 'sms' | 'push' }))}
+                        onValueChange={(value) => setNewAlert(prev => ({ ...prev, notification_type: value as 'voice' | 'email' | 'sms' | 'push' }))}
                       >
                         <SelectTrigger className="bg-gray-800/50 border-gray-600 text-white">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-gray-800 border-gray-600">
+                          <SelectItem value="voice" className="text-white hover:bg-gray-700">
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-[#16C784]" />
+                              Voice Call (Recommended)
+                            </div>
+                          </SelectItem>
                           <SelectItem value="email" className="text-white hover:bg-gray-700">
                             <div className="flex items-center gap-2">
                               <Bell className="h-4 w-4 text-[#3861FB]" />
@@ -1226,7 +1353,7 @@ const AlertsPage: React.FC = () => {
                           </SelectItem>
                           <SelectItem value="sms" className="text-white hover:bg-gray-700">
                             <div className="flex items-center gap-2">
-                              <Phone className="h-4 w-4 text-[#16C784]" />
+                              <Phone className="h-4 w-4 text-[#FFA500]" />
                               SMS/Text Message
                             </div>
                           </SelectItem>
@@ -1244,8 +1371,9 @@ const AlertsPage: React.FC = () => {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Label className="text-white font-medium">
-                          {newAlert.notification_type === 'email' ? 'Email Address' : 
-                           newAlert.notification_type === 'sms' ? 'Phone Number' : 'Device ID'}
+                          {newAlert.notification_type === 'voice' ? 'Phone Number for Voice Calls' :
+                           newAlert.notification_type === 'email' ? 'Email Address' : 
+                           newAlert.notification_type === 'sms' ? 'Phone Number for SMS' : 'Device ID'}
                         </Label>
                         {profile && (
                           <Button
@@ -1824,6 +1952,17 @@ const AlertsPage: React.FC = () => {
                             >
                               <Phone className="h-3 w-3 sm:h-4 sm:w-4" />
                             </Button>
+
+                            {/* Move to History Button - for testing alert lifecycle */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => moveAlertToHistory(alert.id)}
+                              className="text-orange-400 hover:text-white hover:bg-orange-500/20 p-2"
+                              title="Simulate Alert Trigger (Move to History)"
+                            >
+                              <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                            </Button>
                             
                             {/* Delete Button */}
                             <Button
@@ -1846,15 +1985,146 @@ const AlertsPage: React.FC = () => {
           )}
 
           {activeTab === 'history' && (
-            <Card className="bg-gray-900/50 border-gray-700 backdrop-blur-lg">
-              <CardContent className="text-center py-12">
-                <Clock className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">Alert History</h3>
-                <p className="text-gray-400">
-                  Your triggered alerts will appear here
-                </p>
-              </CardContent>
-            </Card>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold text-white">Alert History</h2>
+                <div className="text-sm text-gray-400">
+                  {historyAlerts.length} triggered alert{historyAlerts.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+
+              {historyAlerts.length === 0 ? (
+                <Card className="bg-gray-900/50 border-gray-700 backdrop-blur-lg">
+                  <CardContent className="text-center py-12">
+                    <Clock className="h-16 w-16 text-gray-600 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-white mb-2">No Alert History</h3>
+                    <p className="text-gray-400">
+                      Your triggered alerts will appear here
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="bg-gray-900/50 border-gray-700 backdrop-blur-lg">
+                  <CardContent className="space-y-3 p-4 sm:p-6">
+                    {historyAlerts.map((alert) => {
+                      const crypto = cryptoInfo[alert.symbol] || { name: alert.symbol, symbol: alert.symbol.replace('USDT', ''), rank: 0 }
+                      const currentPrice = prices[alert.symbol] || 0
+                      
+                      return (
+                        <div 
+                          key={alert.id} 
+                          className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-3 sm:p-4 hover:bg-gray-800/50 transition-colors"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            {/* Left section - Alert Info */}
+                            <div className="flex-1 space-y-2">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="font-medium text-white text-sm sm:text-base truncate">
+                                  {alert.name}
+                                </h4>
+                                <span className="inline-flex items-center px-2 py-1 rounded text-xs bg-gray-600/50 text-gray-300">
+                                  {alert.alert_type === 'price' ? '$ Price Alert' : alert.alert_type === 'percent_change' ? '% Change Alert' : alert.alert_type}
+                                </span>
+                                <span className="inline-flex items-center px-2 py-1 rounded text-xs bg-red-500/20 text-red-400 border border-red-500/30">
+                                  Triggered
+                                </span>
+                              </div>
+                              
+                              <div className="text-xs sm:text-sm text-gray-400 space-y-1">
+                                <div>
+                                  <span className="font-medium">{crypto.name} ({crypto.symbol})</span>
+                                  {currentPrice > 0 && (
+                                    <span className="ml-2">
+                                      Current: <span className="text-white">${currentPrice.toLocaleString()}</span>
+                                    </span>
+                                  )}
+                                </div>
+                                
+                                {alert.alert_type === 'price' && (alert as any).alert_conditions && (alert as any).alert_conditions[0] && (
+                                  <div>
+                                    Target: <span className="text-[#F7931A]">${parseFloat((alert as any).alert_conditions[0].target_value).toLocaleString()}</span>
+                                    <span className="ml-2 text-gray-500">
+                                      ({(alert as any).alert_conditions[0].condition_type.replace('_', ' ')})
+                                    </span>
+                                  </div>
+                                )}
+                                
+                                <div>
+                                  Triggered: <span className="text-gray-300">
+                                    {alert.triggered_at ? new Date(alert.triggered_at).toLocaleString() : 'Unknown'}
+                                  </span>
+                                </div>
+
+                                {alert.trigger_count && alert.trigger_count > 0 && (
+                                  <div>
+                                    Trigger Count: <span className="text-gray-300">{alert.trigger_count}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Right section - Actions */}
+                            <div className="flex items-center gap-2">
+                              {/* Reactivate Button */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  // Reactivate the alert by setting it as the editing alert
+                                  setEditingAlert({
+                                    ...alert,
+                                    is_active: true,
+                                    triggered_at: null
+                                  })
+                                  
+                                  setNewAlert({
+                                    name: alert.name,
+                                    symbol: alert.symbol,
+                                    alert_type: alert.alert_type,
+                                    condition_type: (alert as any).alert_conditions?.[0]?.condition_type || 'price_above',
+                                    target_value: (alert as any).alert_conditions?.[0]?.target_value?.toString() || '',
+                                    notification_type: (alert as any).alert_notifications?.[0]?.notification_type || 'voice',
+                                    notification_destination: (alert as any).alert_notifications?.[0]?.destination || '',
+                                    target_value_2: (alert as any).alert_conditions?.[0]?.target_value_2?.toString() || '',
+                                    timeframe: (alert as any).alert_conditions?.[0]?.timeframe || '1h',
+                                    description: alert.description || '',
+                                    max_triggers: alert.max_triggers?.toString() || '1',
+                                    cooldown_minutes: alert.cooldown_minutes?.toString() || '0',
+                                    is_recurring: alert.is_recurring || false,
+                                    recurring_frequency: alert.recurring_frequency || 'once',
+                                    recurring_days: alert.recurring_days || [],
+                                    recurring_time: alert.recurring_time || '',
+                                    recurring_end_date: alert.recurring_end_date || ''
+                                  })
+                                  
+                                  setIsEditing(true)
+                                  setActiveTab('create')
+                                }}
+                                className="text-green-400 hover:text-white hover:bg-green-500/20 p-2"
+                                title="Reactivate Alert"
+                              >
+                                <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
+                              </Button>
+
+                              {/* Delete Button */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteAlert(alert.id)}
+                                className="text-[#EA3943] hover:text-white hover:bg-[#EA3943]/20 p-2"
+                                title="Delete Alert"
+                              >
+                                <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           )}
         </div>
       </main>

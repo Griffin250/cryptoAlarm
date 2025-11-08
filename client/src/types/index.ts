@@ -54,7 +54,7 @@ export interface AlertCondition {
 export interface AlertNotification {
   id: string;
   alert_id: string;
-  notification_type: 'email' | 'sms' | 'push' | 'webhook';
+  notification_type: 'email' | 'sms' | 'push' | 'voice' | 'webhook';
   destination: string;
   is_enabled: boolean;
   created_at: string;

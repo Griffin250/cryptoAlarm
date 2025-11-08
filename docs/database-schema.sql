@@ -61,7 +61,7 @@ CREATE TABLE public.alert_conditions (
 CREATE TABLE public.alert_notifications (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   alert_id UUID REFERENCES public.alerts(id) ON DELETE CASCADE NOT NULL,
-  notification_type TEXT NOT NULL CHECK (notification_type IN ('email', 'sms', 'push', 'webhook')),
+  notification_type TEXT NOT NULL CHECK (notification_type IN ('email', 'sms', 'push', 'voice', 'webhook')),
   destination TEXT NOT NULL, -- email address, phone number, webhook URL
   is_enabled BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW()
